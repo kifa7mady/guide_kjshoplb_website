@@ -1,0 +1,74 @@
+* {
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+:root{
+    --main-color: #013047;
+    --main-color-hover: #013047c4;
+}
+
+html,
+body{
+    padding: 0px;
+    margin: 0px;
+}
+button,
+input {
+    padding: 0px;
+    margin: 0px;
+    background-color: unset;
+    border: unset;
+    box-shadow: unset;
+    text-decoration: none;
+    outline: none
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px; /* Adjust to your desired max width */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.d-wrap {
+    flex-wrap: wrap;
+}
+
+.d-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.d-jc-between {
+    justify-content: space-between;
+}
+
+.d-ai-center {
+    align-items: center;
+}
+
+.d-column {
+    flex-flow: column;
+}
+
+.font-20 {
+    font-size: 20px;
+}
+
+.font-amiri {
+    font-family: 'Amiri', serif;
+}
+
+.color-1 {
+    color: #013047;
+}
+
+
+

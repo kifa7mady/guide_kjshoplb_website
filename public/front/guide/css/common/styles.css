@@ -1,0 +1,72 @@
+root{
+    --primary-color: #013047;
+    --secondary-color: #0077b6;
+    --tertiary-color: #0096c7;
+    --quaternary-color: #00b4d8;
+    --quinary-color: #48cae4;
+    --senary-color: #90e0ef;
+    --septenary-color: #ade8f4;
+    --octonary-color: #caf0f8;
+    --nonary-color: #e3f2fd;
+    --denary-color: #f1faee;
+}
+body {
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-flow: column;
+}
+
+header {
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+
+header .header-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+header .header-wrapper  .header-logo img{
+    height: 30px;
+    width: auto;
+}
+
+header .header-wrapper  .header-r{
+    gap: 15px;
+}
+
+header .header-wrapper  .header-r .header-r-icon .icon{
+    width: 20px;
+    height: 20px;
+    fill: var(--primary-color);
+}
+
+section {
+}
+
+
+main{
+}
+
+
+footer {
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background-color: #013047;
+    margin-top: auto;;
+}
+footer p{
+    margin: 0;
+}
