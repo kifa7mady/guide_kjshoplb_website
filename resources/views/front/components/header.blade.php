@@ -3,7 +3,7 @@
     <div class="container">
         <div class="header-wrapper d-jc-between d-ai-center">
             <a class="d-flex d-column header-logo d-ai-center" href="/">
-                <img src="{!! asset('front/guide/images/common/logo.svg') !!}" width="60" />
+                <img src="{!! asset('front/images/common/logo.svg') !!}" width="60" />
             </a>
             <div class="header-r d-flex d-wrap">
                 <div class="header-r-icon search-icon">

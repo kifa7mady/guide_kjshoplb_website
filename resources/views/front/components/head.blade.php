@@ -7,11 +7,11 @@
 <meta name="robots" content="noodp">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<link rel="icon" href="{!! asset('front/guide/images/common/favicon-16x16.png') !!}" sizes="16x16" type="image/png">
-<link rel="icon" href="{!! asset('front/guide/images/common/favicon-32x32.png') !!}" sizes="32x32" type="image/png">
-<link rel="icon" href="{!! asset('front/guide/images/common/favicon-48x48.png') !!}" sizes="48x48" type="image/png">
-<link rel="apple-touch-icon" href="{!! asset('front/guide/images/common/favicon-180x180.png') !!}" sizes="180x180">
-<link rel="icon" href="{!! asset('front/guide/images/common/favicon-512x512.png') !!}" sizes="512x512" type="image/png">
+<link rel="icon" href="{!! asset('front/images/common/favicon-16x16.png') !!}" sizes="16x16" type="image/png">
+<link rel="icon" href="{!! asset('front/images/common/favicon-32x32.png') !!}" sizes="32x32" type="image/png">
+<link rel="icon" href="{!! asset('front/images/common/favicon-48x48.png') !!}" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="{!! asset('front/images/common/favicon-180x180.png') !!}" sizes="180x180">
+<link rel="icon" href="{!! asset('front/images/common/favicon-512x512.png') !!}" sizes="512x512" type="image/png">
 
 
 <meta name="description" content="@yield('meta_description', 'دليل العبادية - استكشف المتاجر والصيدليات والمحلات في البلدة')">
@@ -34,8 +34,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="{{ asset('front/guide\css\common/app.css') }}">
-<link rel="stylesheet" href="{{ asset('front/guide\css\common/styles.css') }}?v=2">
+<link rel="stylesheet" href="{{ asset('front/css\common/app.css') }}">
+<link rel="stylesheet" href="{{ asset('front/css\common/styles.css') }}?v=2">
 
 <!-- Include other CSS files if needed -->
 

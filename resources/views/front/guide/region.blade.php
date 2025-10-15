@@ -6,4 +6,5 @@
 @section('meta_keywords', 'المتاجر, الصيدليات, المحلات, بلدة العبادية, موقع شامل, الفئات, البلدة, تسوق, خدمات, احتياجات, دليل, بحث, أماكن, منتجات')
 
 @section('content')
+    @include('front.components.widgets.home-ad')
 @endsection
