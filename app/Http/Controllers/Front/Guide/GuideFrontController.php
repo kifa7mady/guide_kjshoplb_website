@@ -16,7 +16,9 @@ class GuideFrontController extends Controller
     public function index()
     {
         $regions = Region::all();
-        return view('front.guide.region',compact('regions'));
+        $categories = Category::where('parent_id','>', 0)->with('parent')->with('CustomerJobsByCategory')->orderBy('priority','asc')->get();
+//        dd($categories[0]);
+        return view('front.guide.region',compact('regions','categories'));
     }
 
 

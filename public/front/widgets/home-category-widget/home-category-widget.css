@@ -1,0 +1,8 @@
+.home-category-widget .hct-breadcrumb {
+    gap: 10px;
+}
+
+.home-category-widget .hct-breadcrumb .hct-viewall {
+    margin-left: auto;
+    color: var(--primary-color);
+}

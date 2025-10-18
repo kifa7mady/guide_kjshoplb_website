@@ -7,4 +7,5 @@
 
 @section('content')
     @include('front.components.widgets.home-ad')
+    @include('front.components.widgets.home-category-widget',['category_key'=>0])
 @endsection

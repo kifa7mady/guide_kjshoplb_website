@@ -3,16 +3,17 @@
     text-decoration: none;
 }
 
-:root{
+:root {
     --main-color: #013047;
     --main-color-hover: #013047c4;
 }
 
 html,
-body{
+body {
     padding: 0px;
     margin: 0px;
 }
+
 button,
 input {
     padding: 0px;
@@ -33,12 +34,14 @@ input {
     padding-right: 15px;
 }
 
-.d-flex {
+.d-wrap {
     display: flex;
+    flex-wrap: wrap;
 }
 
-.d-wrap {
-    flex-wrap: wrap;
+.d-column {
+    display: flex;
+    flex-flow: column;
 }
 
 .d-center {
@@ -52,10 +55,6 @@ input {
 
 .d-ai-center {
     align-items: center;
-}
-
-.d-column {
-    flex-flow: column;
 }
 
 .font-20 {

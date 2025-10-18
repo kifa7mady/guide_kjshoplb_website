@@ -1,4 +1,4 @@
-root{
+:root {
     --primary-color: #013047;
     --secondary-color: #0077b6;
     --tertiary-color: #0096c7;
@@ -10,12 +10,18 @@ root{
     --nonary-color: #e3f2fd;
     --denary-color: #f1faee;
 }
+
 body {
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-flow: column;
     padding-top: 50px;
+}
+
+.guide-widget {
+    margin: 15px 0px;
+    padding: 15px;
 }
 
 header {
@@ -36,16 +42,16 @@ header .header-wrapper {
     justify-content: space-between;
 }
 
-header .header-wrapper  .header-logo img{
+header .header-wrapper .header-logo img {
     height: 30px;
     width: auto;
 }
 
-header .header-wrapper  .header-r{
+header .header-wrapper .header-r {
     gap: 15px;
 }
 
-header .header-wrapper  .header-r .header-r-icon .icon{
+header .header-wrapper .header-r .header-r-icon .icon {
     width: 20px;
     height: 20px;
     fill: var(--primary-color);
@@ -55,7 +61,7 @@ section {
 }
 
 
-main{
+main {
 }
 
 
@@ -68,6 +74,7 @@ footer {
     background-color: #013047;
     margin-top: auto;;
 }
-footer p{
+
+footer p {
     margin: 0;
 }
