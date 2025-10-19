@@ -3,11 +3,13 @@
     padding: 10px 0px;
     align-items: center;
 }
-.home-category-widget .hct-breadcrumb .arrow-icon svg{
+
+.home-category-widget .hct-breadcrumb .arrow-icon svg {
     width: 10px;
     height: 10px;
     fill: var(--primary-color);
 }
+
 .home-category-widget .hct-breadcrumb .hct-viewall {
     margin-left: auto;
     color: var(--primary-color);
@@ -27,6 +29,12 @@
     flex: 0 0 calc((100% - (var(15px) * 3)) / 3.5); /* ~28.57% minus 3 gaps */
     scroll-snap-align: start;
     gap: 10px;
+    -ms-overflow-style: none; /* IE & old Edge */
+    scrollbar-width: none;
+}
+
+.home-category-widget .hct-row .hct-item::-webkit-scrollbar { /* Chrome/Safari/Edge */
+    display: none;
 }
 
 .home-category-widget .hct-row .hct-item .hct-img {
