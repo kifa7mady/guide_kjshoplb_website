@@ -41,7 +41,50 @@
 <link rel="stylesheet" href="{{ asset('front/css/common/styles.css') }}?v=5">
 
 <!-- Include other CSS files if needed -->
+<style>
+    /* 1) The rubber-band color comes from <html> */
+    html {
+        background: #013047;        /* your app background */
+        height: 100%;
+    }
 
+    /* 2) Make the page fill the screen and keep the same bg */
+    body {
+        margin: 0;
+        min-height: 100vh;          /* modern */
+        min-height: 100dvh;         /* iOS 16+ */
+        background: #013047;
+    }
+
+    /* iOS fallback to fill available height */
+    @supports (-webkit-touch-callout: none) {
+        body { min-height: -webkit-fill-available; }
+    }
+
+    /* 3) Respect the notch/status bar */
+    .app-root {                    /* wrap your whole UI */
+        min-height: 100vh;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        background: inherit;
+    }
+
+    /* If you have a fixed or sticky header, pad it too */
+    .header {
+        position: sticky; /* or fixed */
+        top: 0;
+        padding-top: env(safe-area-inset-top);
+        background: #fff;            /* or your header color */
+    }
+
+    /* Optional: reduce bounce on inner scrollers */
+    .scroll-area {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        background: inherit;
+    }
+
+</style>
 
 {{--<link rel="manifest" href="/manifest.json">--}}
 {{--<meta name="apple-mobile-web-app-capable" content="yes">--}}
