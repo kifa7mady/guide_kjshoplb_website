@@ -22,6 +22,12 @@
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     gap: 15px;
+    -ms-overflow-style: none; /* IE & old Edge */
+    scrollbar-width: none;
+}
+
+.home-category-widget .hct-row::-webkit-scrollbar { /* Chrome/Safari/Edge */
+    display: none;
 }
 
 .home-category-widget .hct-row .hct-item {
@@ -29,12 +35,7 @@
     flex: 0 0 calc((100% - (var(15px) * 3)) / 3.5); /* ~28.57% minus 3 gaps */
     scroll-snap-align: start;
     gap: 10px;
-    -ms-overflow-style: none; /* IE & old Edge */
-    scrollbar-width: none;
-}
 
-.home-category-widget .hct-row .hct-item::-webkit-scrollbar { /* Chrome/Safari/Edge */
-    display: none;
 }
 
 .home-category-widget .hct-row .hct-item .hct-img {
