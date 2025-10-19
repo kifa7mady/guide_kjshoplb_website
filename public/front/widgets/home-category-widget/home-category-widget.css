@@ -1,6 +1,7 @@
 .home-category-widget .hct-breadcrumb {
     gap: 10px;
     padding: 10px 0px;
+    align-items: center;
 }
 .home-category-widget .hct-breadcrumb .arrow-icon svg{
     width: 10px;
