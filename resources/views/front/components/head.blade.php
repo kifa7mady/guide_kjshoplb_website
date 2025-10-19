@@ -4,7 +4,7 @@
 
 <meta charset="utf-8">
 <meta name="robots" content="noodp">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <link rel="icon" href="{!! asset('front/images/common/favicon-16x16.png') !!}" sizes="16x16" type="image/png">
 <link rel="icon" href="{!! asset('front/images/common/favicon-32x32.png') !!}" sizes="32x32" type="image/png">
