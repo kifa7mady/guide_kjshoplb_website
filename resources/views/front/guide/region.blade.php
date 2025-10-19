@@ -5,6 +5,12 @@
 @section('meta_description', ' اكتشف جميع المتاجر والصيدليات والمحلات في بلدة العبادية من خلال موقعنا الشامل. استعرض مختلف الفئات للعثور على كل ما تحتاجه في البلدة، في مكان واحد!')
 @section('meta_keywords', 'المتاجر, الصيدليات, المحلات, بلدة العبادية, موقع شامل, الفئات, البلدة, تسوق, خدمات, احتياجات, دليل, بحث, أماكن, منتجات')
 
+<style>
+    <?php include('front/widgets/home-category-widget/home-category-widget.css')?>
+</style>
+<style>
+    <?php include('front/widgets/home-ad/home-ad.css')?>
+</style>
 @section('content')
     @php
         $ad_key = 0;
