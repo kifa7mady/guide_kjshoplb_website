@@ -72,14 +72,14 @@ main {
     flex-flow: row;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    padding: 5px;
     box-shadow: 0 -10px 20px -12px rgba(0,0,0,0.25);
 }
 
 .sticky-footer .item {
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     width: calc(25%);
     position: relative;
 }
@@ -96,8 +96,7 @@ main {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    top: -44px;
-    position: absolute;
+    margin-top: -25px;
 }
 
 .sticky-footer .item label{
