@@ -34,25 +34,25 @@
         <label>Home</label>
     </div>
     <div class="item d-column">
-        <svg class="icon icon-home">
+        <svg class="icon icon-store">
             <use xlink:href="{!! asset('front/icons/icon-store.svg') !!}#icon-store"></use>
         </svg>
         <label>Stores</label>
     </div>
-    <div class="item d-column">
-        <svg class="icon icon-home">
-            <use xlink:href="{!! asset('front/icons/icon-home.svg') !!}#icon-home"></use>
+    <div class="item item-health d-column">
+        <svg class="icon icon-health">
+            <use xlink:href="{!! asset('front/icons/icon-health.svg') !!}#icon-health"></use>
         </svg>
-        <label>Home</label>
+        <label>Health Care</label>
     </div>
     <div class="item d-column">
-        <svg class="icon icon-home">
+        <svg class="icon icon-worker">
             <use xlink:href="{!! asset('front/icons/icon-worker.svg') !!}#icon-worker"></use>
         </svg>
         <label>Freelance</label>
     </div>
     <div class="item d-column">
-        <svg class="icon icon-home">
+        <svg class="icon icon-offers">
             <use xlink:href="{!! asset('front/icons/icon-offers.svg') !!}#icon-offers"></use>
         </svg>
         <label>Offer & Deals</label>

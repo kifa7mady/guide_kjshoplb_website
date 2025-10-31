@@ -81,6 +81,7 @@ main {
     align-items: center;
     gap: 10px;
     width: calc(25%);
+    position: relative;
 }
 .sticky-footer .item .icon{
     width: 20px;
@@ -88,11 +89,27 @@ main {
     fill: var(--primary-color);
 }
 
+.sticky-footer .item .icon-health{
+    fill: #fff;
+    background-color: var(--primary-color);
+    padding: 7px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    top: -44px;
+    position: absolute;
+}
+
 .sticky-footer .item label{
     text-transform: uppercase;
     font-size: 8px;
     border-bottom: solid 2px transparent;
     color: var(--primary-color);
+}
+
+.sticky-footer .item.item-health label{
+    text-transform: uppercase;
+    margin-top: 5px;
 }
 
 .sticky-footer .item.active label{
