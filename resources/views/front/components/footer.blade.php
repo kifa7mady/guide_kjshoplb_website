@@ -26,6 +26,39 @@
 
     </p>
 </footer>
+<div class="sticky-footer">
+    <div class="item d-column active">
+        <svg class="icon icon-home">
+            <use xlink:href="{!! asset('front/icons/icon-home.svg') !!}#icon-home"></use>
+        </svg>
+        <label>Home</label>
+    </div>
+    <div class="item d-column">
+        <svg class="icon icon-home">
+            <use xlink:href="{!! asset('front/icons/icon-store.svg') !!}#icon-store"></use>
+        </svg>
+        <label>Stores</label>
+    </div>
+    <div class="item d-column">
+        <svg class="icon icon-home">
+            <use xlink:href="{!! asset('front/icons/icon-home.svg') !!}#icon-home"></use>
+        </svg>
+        <label>Home</label>
+    </div>
+    <div class="item d-column">
+        <svg class="icon icon-home">
+            <use xlink:href="{!! asset('front/icons/icon-worker.svg') !!}#icon-worker"></use>
+        </svg>
+        <label>Freelance</label>
+    </div>
+    <div class="item d-column">
+        <svg class="icon icon-home">
+            <use xlink:href="{!! asset('front/icons/icon-offers.svg') !!}#icon-offers"></use>
+        </svg>
+        <label>Offer & Deals</label>
+    </div>
+</div>
+
 <script>
     document.querySelector('#whatsapp-button').addEventListener('click', function() {
     // You can add additional logic here if needed, like tracking clicks or displaying a message

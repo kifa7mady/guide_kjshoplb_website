@@ -1,5 +1,5 @@
 
-<header>
+<div class="header">
     <div class="container">
         <div class="header-wrapper d-jc-between d-ai-center">
             <a class="d-flex d-column header-logo d-ai-center" href="/">
@@ -22,4 +22,6 @@
 {{--            @endif--}}
         </div>
     </div>
-</header>
+</div>
+
+

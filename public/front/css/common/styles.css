@@ -22,7 +22,7 @@ body {
     padding: 15px;
 }
 
-header {
+.header {
     padding: 10px;
     position: sticky;
     top: 0;
@@ -34,22 +34,22 @@ header {
 }
 
 
-header .header-wrapper {
+.header .header-wrapper {
     display: flex;
     width: 100%;
     justify-content: space-between;
 }
 
-header .header-wrapper .header-logo img {
+.header .header-wrapper .header-logo img {
     height: 30px;
     width: auto;
 }
 
-header .header-wrapper .header-r {
+.header .header-wrapper .header-r {
     gap: 15px;
 }
 
-header .header-wrapper .header-r .header-r-icon .icon {
+.header .header-wrapper .header-r .header-r-icon .icon {
     width: 20px;
     height: 20px;
     fill: var(--primary-color);
@@ -62,6 +62,42 @@ section {
 main {
 }
 
+.sticky-footer{
+    background-color: #fff;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    box-shadow: 0 -10px 20px -12px rgba(0,0,0,0.25);
+}
+
+.sticky-footer .item {
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: calc(25%);
+}
+.sticky-footer .item .icon{
+    width: 20px;
+    height: 20px;
+    fill: var(--primary-color);
+}
+
+.sticky-footer .item label{
+    text-transform: uppercase;
+    font-size: 8px;
+    border-bottom: solid 2px transparent;
+    color: var(--primary-color);
+}
+
+.sticky-footer .item.active label{
+    border-color: var(--primary-color);
+}
 
 footer {
     padding: 20px 20px;
