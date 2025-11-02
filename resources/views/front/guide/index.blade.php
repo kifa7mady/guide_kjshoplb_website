@@ -20,7 +20,7 @@
 
             const loader = document.createElement('div');
             loader.className = 'guide-loader';
-            loader.innerHTML = `<img src="/front/icons/icon-squares-loader.svg" alt="" />`;
+            loader.innerHTML = `<img src="/front/icons/icon-square-loader.svg" alt="" />`;
             main.appendChild(loader);
 
             await sleep(delayMs);
