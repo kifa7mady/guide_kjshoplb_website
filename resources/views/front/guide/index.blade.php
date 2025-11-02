@@ -29,17 +29,17 @@
             const timer = setTimeout(() => ac.abort(), 15000);
 
             try {
-                // const res = await fetch(HOME_URL, {
-                //     method: 'GET',
-                //     // Remove X-Requested-With to avoid CORS preflight
-                //     headers: { 'Accept': 'text/html' },
-                //     signal: ac.signal,
-                //     credentials: 'same-origin'
-                // });
-                // if (!res.ok) throw new Error('HTTP ' + res.status);
-                //
-                // const html = await res.text();
-                // main.insertAdjacentHTML('beforeend', html);
+                const res = await fetch(HOME_URL, {
+                    method: 'GET',
+                    // Remove X-Requested-With to avoid CORS preflight
+                    headers: { 'Accept': 'text/html' },
+                    signal: ac.signal,
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                const html = await res.text();
+                main.insertAdjacentHTML('beforeend', html);
             } catch (err) {
                 console.error('Failed loading guide homepage:', err);
                 const errBox = document.createElement('div');
@@ -49,7 +49,7 @@
                 main.appendChild(errBox);
             } finally {
                 clearTimeout(timer);
-                // loader.remove();
+                loader.remove();
             }
         }
 
