@@ -17,10 +17,12 @@
                 @if(isset($customJobs->categories) && isset($customJobs->categories[0]))
                     <div class="hct-img">
                         @if(!$customJobs->images->isEmpty())
-                            <img src="{!! asset('storage/' .$customJobs->images[0]->path) !!}" onerror="this.src='{!! live_asset('storage/' .$customJobs->images[0]->path) !!}'" class="d-block w-100" alt="Shop Logo" loading="lazy"
+                            <img src="{!! asset('storage/' .$customJobs->images[0]->path) !!}" onerror="this.src='{!! live_asset('storage/' .$customJobs->images[0]->path) !!}'"
+                                 class="d-block w-100" alt="Shop Logo" loading="lazy" decoding="async"
                             >
                         @else
-                            <img src="{!! asset('storage/' .$customJobs->subCategories[0]->logo) !!}" onerror="this.src='{!! live_asset('storage/' .$customJobs->subCategories[0]->logo) !!}'" class="d-block w-100" alt="Shop Logo" loading="lazy">
+                            <img src="{!! asset('storage/' .$customJobs->subCategories[0]->logo) !!}" onerror="this.src='{!! live_asset('storage/' .$customJobs->subCategories[0]->logo) !!}'"
+                                 class="d-block w-100" alt="Shop Logo" loading="lazy" decoding="async">
                         @endif
                     </div>
                 @endif
