@@ -14,7 +14,7 @@
 
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-        async function loadGuideHome(delayMs = 2000) {
+        async function loadGuideHome(delayMs = 1000) {
             const main = document.querySelector('main');
             if (!main) return;
 
