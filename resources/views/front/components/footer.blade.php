@@ -1,5 +1,5 @@
 <!-- resources/views/components/footer.blade.php -->
-<footer>
+{{--<footer>--}}
 {{--    <a id="whatsapp-button"  href="https://wa.me/96181806067" target="_blank">--}}
 {{--        <div>--}}
 {{--            <svg width="800px" height="800px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">--}}
@@ -22,10 +22,10 @@
 
 
 
-    <p>&copy; {{ date('Y') }} KJ Guide. Created by Kifah Mady. All rights reserved.
+{{--    <p>&copy; {{ date('Y') }} KJ Guide. Created by Kifah Mady. All rights reserved.--}}
 
-    </p>
-</footer>
+{{--    </p>--}}
+{{--</footer>--}}
 <div class="sticky-footer">
     <div class="item d-column active">
         <svg class="icon icon-home">
@@ -52,10 +52,10 @@
         <label>Freelance</label>
     </div>
     <div class="item d-column">
-        <svg class="icon icon-offers">
-            <use xlink:href="{!! asset('front/icons/icon-offers.svg') !!}#icon-offers"></use>
+        <svg class="icon icon-government">
+            <use xlink:href="{!! asset('front/icons/icon-government.svg') !!}#icon-government"></use>
         </svg>
-        <label>Offer & Deals</label>
+        <label>Public Institution</label>
     </div>
 </div>
 

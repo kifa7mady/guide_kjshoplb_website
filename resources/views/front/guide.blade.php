@@ -11,6 +11,7 @@
 @include('front.components.header')
 
 <main>
+
     @yield('content')
 </main>
 

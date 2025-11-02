@@ -15,6 +15,9 @@ class GuideFrontController extends Controller
 {
     public function index()
     {
+        return view('front.guide.index');
+    }
+    public function getHomePage(){
         $regions = Region::all();
         $categories = Category::query()
             ->where('parent_id', '>', 0)
@@ -24,8 +27,7 @@ class GuideFrontController extends Controller
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get();
-//        dd($categories[0]);
-        return view('front.guide.region',compact('regions','categories'));
+        return view('front.guide.home' , compact('regions','categories'));
     }
 
 
