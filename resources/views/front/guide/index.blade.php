@@ -9,8 +9,8 @@
 
 <script>
     (() => {
-        const HOME_URL = "http://guide.kjshoplb.local/guide/get-home-page";
-        const ICON_URL = @json(asset('front/icons/icon-square-loader.svg'));
+        // Relative path keeps it same-origin on any domain
+        const HOME_URL = "/guide/get-home-page";
 
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -20,7 +20,7 @@
 
             const loader = document.createElement('div');
             loader.className = 'guide-loader';
-            loader.innerHTML = `<img src="${ICON_URL}" alt="" />`;
+            loader.innerHTML = `<img src="/front/icons/icon-squares-loader.svg" alt="" />`;
             main.appendChild(loader);
 
             await sleep(delayMs);
@@ -31,8 +31,10 @@
             try {
                 const res = await fetch(HOME_URL, {
                     method: 'GET',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
-                    signal: ac.signal
+                    // Remove X-Requested-With to avoid CORS preflight
+                    headers: { 'Accept': 'text/html' },
+                    signal: ac.signal,
+                    credentials: 'same-origin'
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
 
@@ -51,9 +53,9 @@
             }
         }
 
-        // ✅ call it
         document.addEventListener('DOMContentLoaded', () => loadGuideHome(2000));
         window.loadGuideHome = loadGuideHome;
     })();
 </script>
+
 
