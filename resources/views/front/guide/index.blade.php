@@ -9,43 +9,122 @@
 
 
 <script>
-    (function(){
-        let io;
+    (() => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-        function upgrade(img){
-            if (img.dataset.src)    img.src = img.dataset.src;
-            if (img.dataset.srcset) img.srcset = img.dataset.srcset;
-            img.classList.add('lazy-loaded'); // for blur-up CSS
-            img.removeAttribute('data-src');
-            img.removeAttribute('data-srcset');
+        // Returns the nearest scrollable parent (or window if none)
+        function getScrollParent(el) {
+            let p = el.parentElement;
+            while (p) {
+                const s = getComputedStyle(p);
+                const overflowY = s.overflowY;
+                if ((overflowY === 'auto' || overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
+                    return p;
+                }
+                p = p.parentElement;
+            }
+            return null; // means window
         }
 
-        function initLazyImages(root = document){
-            const imgs = root.querySelectorAll('img.lazy:not(.lazy-loaded)');
+        function inViewport(el, root = null, margin = 0) {
+            const r = el.getBoundingClientRect();
+            let top = r.top, bottom = r.bottom, left = r.left, right = r.right;
+            let vw = window.innerWidth, vh = window.innerHeight;
+
+            if (root && root !== window) {
+                const rr = root.getBoundingClientRect();
+                vw = rr.width; vh = rr.height;
+                top -= rr.top; bottom -= rr.top; left -= rr.left; right -= rr.left;
+            }
+            return (bottom >= -margin && top <= vh + margin && right >= -margin && left <= vw + margin);
+        }
+
+        function upgradeImg(img) {
+            const pic = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
+            if (pic) {
+                pic.querySelectorAll('source[data-srcset]').forEach(src => {
+                    src.srcset = src.dataset.srcset;
+                    src.removeAttribute('data-srcset');
+                });
+            }
+            if (img.dataset.srcset) {
+                img.srcset = img.dataset.srcset;
+                img.removeAttribute('data-srcset');
+            }
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+            img.classList.add('lazy-loaded');
+        }
+
+        function initLazyImages(rootEl = document) {
+            const imgs = Array.from(rootEl.querySelectorAll('img.lazy:not(.lazy-loaded)'));
             if (!imgs.length) return;
 
-            // If IntersectionObserver is supported, use it
-            if ('IntersectionObserver' in window) {
-                io ??= new IntersectionObserver((entries) => {
-                    for (const e of entries) {
-                        if (e.isIntersecting) {
-                            upgrade(e.target);
-                            io.unobserve(e.target);
-                        }
-                    }
-                }, { rootMargin: '200px 0px' }); // start a bit before they show
+            // Determine the scrolling context (if your <main> is scrollable, use it)
+            const scrollRoot = getScrollParent(rootEl) || getScrollParent(imgs[0]) || null;
 
-                imgs.forEach(img => io.observe(img));
-            } else {
-                // Fallback: just upgrade now
-                imgs.forEach(upgrade);
+            // Fallback runner (works even when IO is buggy on iOS PWA)
+            const marginPx = Math.max(300, Math.round((window.innerHeight || 800) * 0.75)); // pre-load earlier
+            const check = () => {
+                for (const img of imgs) {
+                    if (!img.isConnected || img.classList.contains('lazy-loaded')) continue;
+                    if (inViewport(img, scrollRoot || window, marginPx)) upgradeImg(img);
+                }
+            };
+
+            // Use IO when possible, but keep fallback listeners alive for iOS/WebView quirks
+            let io = null;
+            if ('IntersectionObserver' in window) {
+                try {
+                    io = new IntersectionObserver((entries) => {
+                        for (const e of entries) {
+                            if (e.isIntersecting) {
+                                upgradeImg(e.target);
+                                io.unobserve(e.target);
+                            }
+                        }
+                    }, {
+                        root: (scrollRoot && scrollRoot !== document.body) ? scrollRoot : null,
+                        rootMargin: '50% 0px',   // very generous lead-in
+                        threshold: 0.01
+                    });
+
+                    // Use rAF so iOS has a painted layout before observation
+                    requestAnimationFrame(() => imgs.forEach(img => io.observe(img)));
+                } catch {
+                    io = null;
+                }
             }
+
+            // Always attach fallback listeners (cheap & passive)
+            const target = scrollRoot || window;
+            const onScroll = () => { requestAnimationFrame(check); };
+            target.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll, { passive: true });
+            window.addEventListener('orientationchange', onScroll, { passive: true });
+            document.addEventListener('visibilitychange', onScroll, { passive: true });
+
+            // Initial check (important for iOS when IO stalls until first scroll)
+            check();
+
+            // Expose a tiny API to re-check after DOM mutations
+            return { refresh: check, destroy: () => {
+                    target.removeEventListener('scroll', onScroll);
+                    window.removeEventListener('resize', onScroll);
+                    window.removeEventListener('orientationchange', onScroll);
+                    document.removeEventListener('visibilitychange', onScroll);
+                    if (io) io.disconnect();
+                }};
         }
 
-        // expose to call after you inject HOME_URL
+        // Expose globally so you can call after injecting HOME_URL HTML
         window.initLazyImages = initLazyImages;
     })();
 </script>
+
 <script>
     (() => {
         // ---- Routes emitted safely from Blade ----
@@ -79,7 +158,7 @@
         function showLoader(target = $('main')) {
             const el = document.createElement('div');
             el.className = 'guide-loader';
-            el.innerHTML = '<div class="spinner" aria-label="Loading…"></div>';
+            el.innerHTML = '<img src="/front/icons/icon-square-loader.svg" alt="" />';
             target.appendChild(el);
             return el;
         }
@@ -175,13 +254,4 @@
     })();
 </script>
 
-<style>
-    /* Minimal styles (tweak as you like) */
-    .guide-loader { display:flex; justify-content:center; align-items:center; padding:16px; }
-    .spinner {
-        width: 28px; height: 28px; border: 3px solid #ccc; border-top-color: #013047;
-        border-radius: 50%; animation: guide-spin .9s linear infinite;
-    }
-    .guide-error { padding:12px; color:#013047; background:#f6f8fa; border-radius:8px; }
-    @keyframes guide-spin { to { transform: rotate(360deg); } }
-</style>
+
