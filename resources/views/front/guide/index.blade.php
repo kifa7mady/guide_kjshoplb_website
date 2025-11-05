@@ -15,29 +15,30 @@
 </style>
 <script>
     (() => {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const DEBUG = false;
 
-        // Returns the nearest scrollable parent (or window if none)
-        function getScrollParent(el) {
-            let p = el.parentElement;
-            while (p) {
+        const log = (...a) => { if (DEBUG) console.log('[lazy]', ...a); };
+
+        const $ = (s, r=document) => r.querySelector(s);
+        const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+        function getScrollParent(el){
+            let p = el;
+            while (p && p !== document.body){
                 const s = getComputedStyle(p);
-                const overflowY = s.overflowY;
-                if ((overflowY === 'auto' || overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
-                    return p;
-                }
+                const oy = s.overflowY;
+                if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) return p;
                 p = p.parentElement;
             }
-            return null; // means window
+            return null; // means window/document
         }
 
-        function inViewport(el, root = null, margin = 0) {
+        function inViewport(el, root = null, margin = 0){
             const r = el.getBoundingClientRect();
-            let top = r.top, bottom = r.bottom, left = r.left, right = r.right;
             let vw = window.innerWidth, vh = window.innerHeight;
+            let top = r.top, left = r.left, bottom = r.bottom, right = r.right;
 
-            if (root && root !== window) {
+            if (root && root !== window){
                 const rr = root.getBoundingClientRect();
                 vw = rr.width; vh = rr.height;
                 top -= rr.top; bottom -= rr.top; left -= rr.left; right -= rr.left;
@@ -45,90 +46,115 @@
             return (bottom >= -margin && top <= vh + margin && right >= -margin && left <= vw + margin);
         }
 
-        function upgradeImg(img) {
+        function promoteSources(img){
+            // <picture> sources
             const pic = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
-            if (pic) {
-                pic.querySelectorAll('source[data-srcset]').forEach(src => {
-                    src.srcset = src.dataset.srcset;
-                    src.removeAttribute('data-srcset');
+            if (pic){
+                pic.querySelectorAll('source[data-srcset]').forEach(s => {
+                    s.srcset = s.dataset.srcset;
+                    s.removeAttribute('data-srcset');
                 });
             }
-            if (img.dataset.srcset) {
-                img.srcset = img.dataset.srcset;
-                img.removeAttribute('data-srcset');
-            }
-            if (img.dataset.src) {
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-            }
+            // <img>
+            if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
+            if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
             img.classList.add('lazy-loaded');
         }
 
-        function initLazyImages(rootEl = document) {
-            const imgs = Array.from(rootEl.querySelectorAll('img.lazy:not(.lazy-loaded)'));
+        function initLazyImages(rootEl = document){
+            // All images inside rootEl that need work
+            const imgs = $$('.lazy:not(.lazy-loaded)', rootEl);
             if (!imgs.length) return;
 
-            // Determine the scrolling context (if your <main> is scrollable, use it)
+            // Pick a scroll root (prefer nearest scrollable container, else window)
             const scrollRoot = getScrollParent(rootEl) || getScrollParent(imgs[0]) || null;
+            const target = scrollRoot || window;
 
-            // Fallback runner (works even when IO is buggy on iOS PWA)
-            const marginPx = Math.max(300, Math.round((window.innerHeight || 800) * 0.75)); // pre-load earlier
+            const marginPx = Math.max(400, Math.round((window.innerHeight || 800))); // preload ~1 viewport ahead
+
+            // Fallback checker
             const check = () => {
-                for (const img of imgs) {
-                    if (!img.isConnected || img.classList.contains('lazy-loaded')) continue;
-                    if (inViewport(img, scrollRoot || window, marginPx)) upgradeImg(img);
-                }
+                imgs.forEach(img => {
+                    if (!img.isConnected || img.classList.contains('lazy-loaded')) return;
+                    if (inViewport(img, scrollRoot || window, marginPx)) promoteSources(img);
+                });
             };
 
-            // Use IO when possible, but keep fallback listeners alive for iOS/WebView quirks
+            // IntersectionObserver (when available), still keep fallbacks for Safari quirks
             let io = null;
-            if ('IntersectionObserver' in window) {
+            if ('IntersectionObserver' in window){
                 try {
                     io = new IntersectionObserver((entries) => {
-                        for (const e of entries) {
-                            if (e.isIntersecting) {
-                                upgradeImg(e.target);
+                        entries.forEach(e => {
+                            if (e.isIntersecting){
+                                promoteSources(e.target);
                                 io.unobserve(e.target);
                             }
-                        }
+                        });
                     }, {
                         root: (scrollRoot && scrollRoot !== document.body) ? scrollRoot : null,
-                        rootMargin: '50% 0px',   // very generous lead-in
+                        rootMargin: '100% 0px', // very generous lead-in
                         threshold: 0.01
                     });
-
-                    // Use rAF so iOS has a painted layout before observation
+                    // Observe on next frame to ensure layout is ready (important on iOS)
                     requestAnimationFrame(() => imgs.forEach(img => io.observe(img)));
-                } catch {
-                    io = null;
-                }
+                } catch (e){ io = null; }
             }
 
-            // Always attach fallback listeners (cheap & passive)
-            const target = scrollRoot || window;
-            const onScroll = () => { requestAnimationFrame(check); };
+            // Fallback listeners (cheap & passive)
+            const onScroll = () => requestAnimationFrame(check);
             target.addEventListener('scroll', onScroll, { passive: true });
             window.addEventListener('resize', onScroll, { passive: true });
             window.addEventListener('orientationchange', onScroll, { passive: true });
             document.addEventListener('visibilitychange', onScroll, { passive: true });
+            window.addEventListener('pageshow', onScroll, { passive: true }); // bfcache restore
 
-            // Initial check (important for iOS when IO stalls until first scroll)
+            // Initial + safety re-check (handles iOS cases where IO won’t fire until a user scroll)
             check();
+            const safety = setInterval(() => { check(); }, 500);
+            setTimeout(() => clearInterval(safety), 4000); // stop after 4s
 
-            // Expose a tiny API to re-check after DOM mutations
-            return { refresh: check, destroy: () => {
+            // Watch dynamic inserts (your PWA injects HTML)
+            const mo = new MutationObserver((muts) => {
+                let needs = false;
+                muts.forEach(m => {
+                    m.addedNodes?.forEach(n => {
+                        if (n.nodeType === 1){
+                            if (n.matches?.('img.lazy:not(.lazy-loaded)')) needs = true;
+                            if (!needs && n.querySelector && n.querySelector('img.lazy:not(.lazy-loaded)')) needs = true;
+                        }
+                    });
+                });
+                if (needs) {
+                    // Recurse only on newly added subtree to keep it light
+                    muts.forEach(m => m.addedNodes.forEach(n => {
+                        if (n.nodeType === 1) initLazyImages(n);
+                    }));
+                    check();
+                }
+            });
+            mo.observe(rootEl, { childList: true, subtree: true });
+
+            // Return a small API in case you need manual control
+            return {
+                refresh: check,
+                destroy(){
                     target.removeEventListener('scroll', onScroll);
                     window.removeEventListener('resize', onScroll);
                     window.removeEventListener('orientationchange', onScroll);
                     document.removeEventListener('visibilitychange', onScroll);
+                    window.removeEventListener('pageshow', onScroll);
                     if (io) io.disconnect();
-                }};
+                    mo.disconnect();
+                }
+            };
         }
 
-        // Expose globally so you can call after injecting HOME_URL HTML
+        // Expose globally; call after you inject/replace the HOME_URL HTML
         window.initLazyImages = initLazyImages;
     })();
 </script>
+
 
 <script>
     (() => {
