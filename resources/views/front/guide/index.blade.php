@@ -27,7 +27,7 @@
                 }
                 p = p.parentElement;
             }
-            return null; // window is the scroller
+            return null;
         }
 
         function inViewport(el, root=null, margin=0) {
@@ -56,30 +56,47 @@
                 img.removeAttribute('data-srcset');
             }
             if (img.dataset.src) {
-                img.src = img.dataset.src;
+                // Safari-specific: Force reload by breaking cache
+                img.src = img.dataset.src + (img.dataset.src.includes('?') ? '&' : '?') + 't=' + Date.now();
                 img.removeAttribute('data-src');
             }
-            img.loading = 'eager'; // nudge Safari
+            img.loading = 'eager';
         }
 
         async function upgrade(img) {
             if (img.classList.contains('lazy-loaded')) return;
+
+            // Add loading state
+            img.classList.add('lazy-loading');
+
             promoteSources(img);
-            try { if (img.decode) await img.decode(); } catch {}
-            img.classList.add('lazy-loaded');
+
+            // Safari-specific: Force load by removing and re-adding to DOM
+            const parent = img.parentNode;
+            const nextSibling = img.nextSibling;
+            const clone = img.cloneNode(true);
+
+            parent.removeChild(img);
+            parent.insertBefore(clone, nextSibling);
+
+            try {
+                if (clone.decode) await clone.decode();
+            } catch (e) {
+                console.log('Image decode failed, continuing anyway:', e);
+            }
+
+            clone.classList.remove('lazy-loading');
+            clone.classList.add('lazy-loaded');
         }
 
-        // Core: IO-free lazy loader
         function initLazyImages(rootEl = document) {
-            // Gather targets (skip any already loaded)
             const imgs = $$('img.lazy:not(.lazy-loaded)', rootEl);
             if (!imgs.length) return;
 
-            // Determine the scroll root (container or window)
             const scrollRoot = nearestScrollRoot(rootEl) || nearestScrollRoot(imgs[0]) || null;
             const target = scrollRoot || window;
 
-            const marginPx = Math.max(400, Math.round((window.innerHeight || 800))); // load ~1 viewport ahead
+            const marginPx = Math.max(400, Math.round((window.innerHeight || 800)));
 
             let ticking = false;
             const check = () => {
@@ -94,60 +111,79 @@
                 });
             };
 
-            // Attach robust listeners
+            // Enhanced event listeners for iOS
             const onScroll = () => check();
             const onResize = () => check();
-            const onVis    = () => check();
+            const onVis = () => {
+                // Force check when page becomes visible again
+                setTimeout(check, 100);
+            };
 
             target.addEventListener('scroll', onScroll, { passive: true });
             window.addEventListener('resize', onResize, { passive: true });
             window.addEventListener('orientationchange', onResize, { passive: true });
-            document.addEventListener('visibilitychange', onVis, { passive: true });
-            window.addEventListener('pageshow', onVis, { passive: true });
+            document.addEventListener('visibilitychange', onVis);
+            document.addEventListener('webkitvisibilitychange', onVis); // Safari
+            window.addEventListener('pageshow', (e) => {
+                // Fix for Safari back/forward cache
+                if (e.persisted) setTimeout(check, 100);
+            }, { passive: true });
             window.addEventListener('focus', onVis, { passive: true });
-            // iOS occasionally needs a touch nudge
+
+            // More aggressive iOS touch events
+            window.addEventListener('touchstart', onScroll, { passive: true });
             window.addEventListener('touchmove', onScroll, { passive: true });
+            window.addEventListener('touchend', onScroll, { passive: true });
 
-            // Initial + safety polling (Safari sometimes stalls until a few frames)
-            check();
-            const safety = setInterval(check, 250);
-            setTimeout(() => clearInterval(safety), 5000);
+            // Initial check with delays for Safari
+            setTimeout(check, 100);
+            setTimeout(check, 500);
 
-            // Handle dynamically injected HTML (your PWA flow)
+            // Safety polling
+            const safety = setInterval(check, 300);
+            setTimeout(() => clearInterval(safety), 10000);
+
+            // Mutation Observer for dynamic content
             const mo = new MutationObserver((muts) => {
-                let newNodes = [];
+                let shouldCheck = false;
                 muts.forEach(m => m.addedNodes.forEach(n => {
                     if (n.nodeType === 1) {
-                        if (n.matches && n.matches('img.lazy:not(.lazy-loaded)')) newNodes.push(n);
-                        newNodes.push(...$$('img.lazy:not(.lazy-loaded)', n));
+                        if (n.matches && n.matches('img.lazy:not(.lazy-loaded)')) shouldCheck = true;
+                        if ($$('img.lazy:not(.lazy-loaded)', n).length) shouldCheck = true;
                     }
                 }));
-                if (newNodes.length) {
-                    // Observe the new subtree
-                    initLazyImages(rootEl);
-                    check();
+                if (shouldCheck) {
+                    setTimeout(check, 100);
                 }
             });
             mo.observe(rootEl, { childList: true, subtree: true });
 
-            // API (optional)
             return {
-                refresh: check,
+                refresh: () => setTimeout(check, 100),
                 destroy() {
                     target.removeEventListener('scroll', onScroll);
                     window.removeEventListener('resize', onResize);
                     window.removeEventListener('orientationchange', onResize);
                     document.removeEventListener('visibilitychange', onVis);
+                    document.removeEventListener('webkitvisibilitychange', onVis);
                     window.removeEventListener('pageshow', onVis);
                     window.removeEventListener('focus', onVis);
+                    window.removeEventListener('touchstart', onScroll);
                     window.removeEventListener('touchmove', onScroll);
+                    window.removeEventListener('touchend', onScroll);
                     mo.disconnect();
                     clearInterval(safety);
                 }
             };
         }
 
-        // Expose so you can call after HOME_URL injection
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => initLazyImages());
+        } else {
+            initLazyImages();
+        }
+
         window.initLazyImages = initLazyImages;
     })();
 </script>
