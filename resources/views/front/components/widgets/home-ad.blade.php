@@ -1,5 +1,5 @@
 <div class="guide-widget home-ad-widget">
-    <div class="lazy-wrapper" style="width:130px; height:130px;">
+    <div class="lazy-wrapper">
         <img
             class="lazy d-block w-100"
             src="{!! asset('/front/images/common/placeholder.jpg') !!}"
