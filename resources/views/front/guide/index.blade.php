@@ -65,7 +65,7 @@
                 const res = await fetch(url, {
                     method: 'GET',
                     headers: { Accept: 'text/html', ...headers },
-                    // credentials: 'same-origin',
+                    credentials: 'include',
                     signal: ac.signal
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
