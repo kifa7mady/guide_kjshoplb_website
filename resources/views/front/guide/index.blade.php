@@ -15,145 +15,143 @@
 </style>
 <script>
     (() => {
-        const DEBUG = false;
-
-        const log = (...a) => { if (DEBUG) console.log('[lazy]', ...a); };
-
-        const $ = (s, r=document) => r.querySelector(s);
+        // ---- tiny helpers ----
         const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 
-        function getScrollParent(el){
+        function nearestScrollRoot(el) {
             let p = el;
-            while (p && p !== document.body){
-                const s = getComputedStyle(p);
-                const oy = s.overflowY;
-                if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) return p;
+            while (p && p !== document.body) {
+                const st = getComputedStyle(p);
+                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
+                    return p;
+                }
                 p = p.parentElement;
             }
-            return null; // means window/document
+            return null; // window is the scroller
         }
 
-        function inViewport(el, root = null, margin = 0){
+        function inViewport(el, root=null, margin=0) {
             const r = el.getBoundingClientRect();
             let vw = window.innerWidth, vh = window.innerHeight;
-            let top = r.top, left = r.left, bottom = r.bottom, right = r.right;
+            let { top, left, bottom, right } = r;
 
-            if (root && root !== window){
-                const rr = root.getBoundingClientRect();
-                vw = rr.width; vh = rr.height;
-                top -= rr.top; bottom -= rr.top; left -= rr.left; right -= rr.left;
+            if (root && root !== window) {
+                const cr = root.getBoundingClientRect();
+                vw = cr.width; vh = cr.height;
+                top -= cr.top; bottom -= cr.top; left -= cr.left; right -= cr.left;
             }
-            return (bottom >= -margin && top <= vh + margin && right >= -margin && left <= vw + margin);
+            return bottom >= -margin && top <= vh + margin && right >= -margin && left <= vw + margin;
         }
 
-        function promoteSources(img){
-            // <picture> sources
-            const pic = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
-            if (pic){
+        function promoteSources(img) {
+            const pic = img.parentElement && img.parentElement.tagName === 'PICTURE' ? img.parentElement : null;
+            if (pic) {
                 pic.querySelectorAll('source[data-srcset]').forEach(s => {
                     s.srcset = s.dataset.srcset;
                     s.removeAttribute('data-srcset');
                 });
             }
-            // <img>
-            if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
-            if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+            if (img.dataset.srcset) {
+                img.srcset = img.dataset.srcset;
+                img.removeAttribute('data-srcset');
+            }
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+            img.loading = 'eager'; // nudge Safari
+        }
+
+        async function upgrade(img) {
+            if (img.classList.contains('lazy-loaded')) return;
+            promoteSources(img);
+            try { if (img.decode) await img.decode(); } catch {}
             img.classList.add('lazy-loaded');
         }
 
-        function initLazyImages(rootEl = document){
-            // All images inside rootEl that need work
-            const imgs = $$('.lazy:not(.lazy-loaded)', rootEl);
+        // Core: IO-free lazy loader
+        function initLazyImages(rootEl = document) {
+            // Gather targets (skip any already loaded)
+            const imgs = $$('img.lazy:not(.lazy-loaded)', rootEl);
             if (!imgs.length) return;
 
-            // Pick a scroll root (prefer nearest scrollable container, else window)
-            const scrollRoot = getScrollParent(rootEl) || getScrollParent(imgs[0]) || null;
+            // Determine the scroll root (container or window)
+            const scrollRoot = nearestScrollRoot(rootEl) || nearestScrollRoot(imgs[0]) || null;
             const target = scrollRoot || window;
 
-            const marginPx = Math.max(400, Math.round((window.innerHeight || 800))); // preload ~1 viewport ahead
+            const marginPx = Math.max(400, Math.round((window.innerHeight || 800))); // load ~1 viewport ahead
 
-            // Fallback checker
+            let ticking = false;
             const check = () => {
-                imgs.forEach(img => {
-                    if (!img.isConnected || img.classList.contains('lazy-loaded')) return;
-                    if (inViewport(img, scrollRoot || window, marginPx)) promoteSources(img);
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(() => {
+                    imgs.forEach(img => {
+                        if (!img.isConnected || img.classList.contains('lazy-loaded')) return;
+                        if (inViewport(img, scrollRoot || window, marginPx)) upgrade(img);
+                    });
+                    ticking = false;
                 });
             };
 
-            // IntersectionObserver (when available), still keep fallbacks for Safari quirks
-            let io = null;
-            if ('IntersectionObserver' in window){
-                try {
-                    io = new IntersectionObserver((entries) => {
-                        entries.forEach(e => {
-                            if (e.isIntersecting){
-                                promoteSources(e.target);
-                                io.unobserve(e.target);
-                            }
-                        });
-                    }, {
-                        root: (scrollRoot && scrollRoot !== document.body) ? scrollRoot : null,
-                        rootMargin: '100% 0px', // very generous lead-in
-                        threshold: 0.01
-                    });
-                    // Observe on next frame to ensure layout is ready (important on iOS)
-                    requestAnimationFrame(() => imgs.forEach(img => io.observe(img)));
-                } catch (e){ io = null; }
-            }
+            // Attach robust listeners
+            const onScroll = () => check();
+            const onResize = () => check();
+            const onVis    = () => check();
 
-            // Fallback listeners (cheap & passive)
-            const onScroll = () => requestAnimationFrame(check);
             target.addEventListener('scroll', onScroll, { passive: true });
-            window.addEventListener('resize', onScroll, { passive: true });
-            window.addEventListener('orientationchange', onScroll, { passive: true });
-            document.addEventListener('visibilitychange', onScroll, { passive: true });
-            window.addEventListener('pageshow', onScroll, { passive: true }); // bfcache restore
+            window.addEventListener('resize', onResize, { passive: true });
+            window.addEventListener('orientationchange', onResize, { passive: true });
+            document.addEventListener('visibilitychange', onVis, { passive: true });
+            window.addEventListener('pageshow', onVis, { passive: true });
+            window.addEventListener('focus', onVis, { passive: true });
+            // iOS occasionally needs a touch nudge
+            window.addEventListener('touchmove', onScroll, { passive: true });
 
-            // Initial + safety re-check (handles iOS cases where IO won’t fire until a user scroll)
+            // Initial + safety polling (Safari sometimes stalls until a few frames)
             check();
-            const safety = setInterval(() => { check(); }, 500);
-            setTimeout(() => clearInterval(safety), 4000); // stop after 4s
+            const safety = setInterval(check, 250);
+            setTimeout(() => clearInterval(safety), 5000);
 
-            // Watch dynamic inserts (your PWA injects HTML)
+            // Handle dynamically injected HTML (your PWA flow)
             const mo = new MutationObserver((muts) => {
-                let needs = false;
-                muts.forEach(m => {
-                    m.addedNodes?.forEach(n => {
-                        if (n.nodeType === 1){
-                            if (n.matches?.('img.lazy:not(.lazy-loaded)')) needs = true;
-                            if (!needs && n.querySelector && n.querySelector('img.lazy:not(.lazy-loaded)')) needs = true;
-                        }
-                    });
-                });
-                if (needs) {
-                    // Recurse only on newly added subtree to keep it light
-                    muts.forEach(m => m.addedNodes.forEach(n => {
-                        if (n.nodeType === 1) initLazyImages(n);
-                    }));
+                let newNodes = [];
+                muts.forEach(m => m.addedNodes.forEach(n => {
+                    if (n.nodeType === 1) {
+                        if (n.matches && n.matches('img.lazy:not(.lazy-loaded)')) newNodes.push(n);
+                        newNodes.push(...$$('img.lazy:not(.lazy-loaded)', n));
+                    }
+                }));
+                if (newNodes.length) {
+                    // Observe the new subtree
+                    initLazyImages(rootEl);
                     check();
                 }
             });
             mo.observe(rootEl, { childList: true, subtree: true });
 
-            // Return a small API in case you need manual control
+            // API (optional)
             return {
                 refresh: check,
-                destroy(){
+                destroy() {
                     target.removeEventListener('scroll', onScroll);
-                    window.removeEventListener('resize', onScroll);
-                    window.removeEventListener('orientationchange', onScroll);
-                    document.removeEventListener('visibilitychange', onScroll);
-                    window.removeEventListener('pageshow', onScroll);
-                    if (io) io.disconnect();
+                    window.removeEventListener('resize', onResize);
+                    window.removeEventListener('orientationchange', onResize);
+                    document.removeEventListener('visibilitychange', onVis);
+                    window.removeEventListener('pageshow', onVis);
+                    window.removeEventListener('focus', onVis);
+                    window.removeEventListener('touchmove', onScroll);
                     mo.disconnect();
+                    clearInterval(safety);
                 }
             };
         }
 
-        // Expose globally; call after you inject/replace the HOME_URL HTML
+        // Expose so you can call after HOME_URL injection
         window.initLazyImages = initLazyImages;
     })();
 </script>
+
 
 
 <script>

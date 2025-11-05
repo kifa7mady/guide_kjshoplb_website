@@ -26,6 +26,7 @@
                             decoding="async"
                             sizes="100vw"
                             alt="Shop Logo"
+                            width="800" height="533"
                             />
                         @else
                             <img
@@ -37,6 +38,7 @@
                                 decoding="async"
                                 sizes="100vw"
                                 alt="Shop Logo"
+                                width="800" height="533"
                             />
                         @endif
                     </div>
