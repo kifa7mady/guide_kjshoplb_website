@@ -16,6 +16,7 @@
             <div class="hct-item d-column">
                 @if(isset($customJobs->categories) && isset($customJobs->categories[0]))
                     <div class="hct-img" data-id="{!! $customJobs->id !!}">
+                        <div class="lazy-wrapper" style="width:130px; height:130px;">
                         @if(!$customJobs->images->isEmpty())
                             <img
                                 class="lazy d-block w-100"
@@ -40,6 +41,7 @@
                                 width="130" height="130"
                             />
                         @endif
+                        </div>
                     </div>
                 @endif
                 <div class="">{!! $customJobs->name !!}</div>

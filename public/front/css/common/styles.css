@@ -35,6 +35,25 @@ body {
     height: 50px;
 }
 
+.lazy-wrapper {
+    background-image: url('/front/images/common/placeholder.jpg');
+    background-size: cover;
+    background-position: center;
+    display: inline-block;
+    overflow: hidden;
+}
+
+img.lazy {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    display: block;
+}
+
+img.lazy.lazy-loaded {
+    opacity: 1;
+}
+
+
 .header {
     padding: 10px;
     position: sticky;

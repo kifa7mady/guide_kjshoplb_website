@@ -38,7 +38,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <link rel="stylesheet" href="{{ asset('front/css/common/app.css') }}">
-<link rel="stylesheet" href="{{ asset('front/css/common/styles.css') }}?v=10">
+<link rel="stylesheet" href="{{ asset('front/css/common/styles.css') }}?v=11">
 
 
 <!-- Include other CSS files if needed -->
