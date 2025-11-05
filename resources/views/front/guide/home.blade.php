@@ -19,3 +19,6 @@
     @endif
     @include('front.components.widgets.home-category-widget',['category_key'=>$category_key])
 @endforeach
+
+
+

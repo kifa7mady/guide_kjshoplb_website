@@ -60,18 +60,18 @@
 </div>
 
 <script>
-    document.querySelector('#whatsapp-button').addEventListener('click', function() {
-    // You can add additional logic here if needed, like tracking clicks or displaying a message
-    });
+    // document.querySelector('#whatsapp-button').addEventListener('click', function() {
+    // // You can add additional logic here if needed, like tracking clicks or displaying a message
+    // });
 </script>
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(function(reg) {
-                console.log('Service worker registered.', reg);
-            })
-            .catch(function(error) {
-                console.error('Service worker registration failed:', error);
-            });
-    }
+    // if ('serviceWorker' in navigator) {
+    //     navigator.serviceWorker.register('/sw.js')
+    //         .then(function(reg) {
+    //             console.log('Service worker registered.', reg);
+    //         })
+    //         .catch(function(error) {
+    //             console.error('Service worker registration failed:', error);
+    //         });
+    // }
 </script>

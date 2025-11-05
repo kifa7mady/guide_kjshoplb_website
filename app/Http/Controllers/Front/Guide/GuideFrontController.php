@@ -30,6 +30,13 @@ class GuideFrontController extends Controller
         return view('front.guide.home' , compact('regions','categories'));
     }
 
+    public function getCustomerPage(){
+        return view('front.guide.customer-page');
+    }
+
+    public function getSubCategoryPage(){
+        return view('front.guide.sub-category');
+    }
 
     public function showCategories(Request $request)
     {
