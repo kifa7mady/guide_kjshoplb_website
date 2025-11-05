@@ -7,7 +7,12 @@
 
 <!-- HTML -->
 
-
+<style>
+    main {
+        overflow-y: auto;
+        /* -webkit-overflow-scrolling: touch;  // if this causes issues, try removing it */
+    }
+</style>
 <script>
     (() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
