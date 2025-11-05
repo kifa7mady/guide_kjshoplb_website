@@ -15,88 +15,76 @@
 </style>
 <script>
     (() => {
-        // ---- tiny helpers ----
         const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 
-        function nearestScrollRoot(el) {
-            let p = el;
-            while (p && p !== document.body) {
-                const st = getComputedStyle(p);
-                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
-                    return p;
-                }
-                p = p.parentElement;
-            }
-            return null;
-        }
+        // iOS / Safari detection
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-        function inViewport(el, root=null, margin=0) {
+        // viewport check (with generous margin)
+        function inViewport(el, margin = 800) {
             const r = el.getBoundingClientRect();
-            let vw = window.innerWidth, vh = window.innerHeight;
-            let { top, left, bottom, right } = r;
-
-            if (root && root !== window) {
-                const cr = root.getBoundingClientRect();
-                vw = cr.width; vh = cr.height;
-                top -= cr.top; bottom -= cr.top; left -= cr.left; right -= cr.left;
-            }
-            return bottom >= -margin && top <= vh + margin && right >= -margin && left <= vw + margin;
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            const vw = window.innerWidth  || document.documentElement.clientWidth;
+            return r.bottom >= -margin && r.top <= vh + margin && r.right >= -margin && r.left <= vw + margin;
         }
 
-        function promoteSources(img) {
-            const pic = img.parentElement && img.parentElement.tagName === 'PICTURE' ? img.parentElement : null;
-            if (pic) {
-                pic.querySelectorAll('source[data-srcset]').forEach(s => {
-                    s.srcset = s.dataset.srcset;
-                    s.removeAttribute('data-srcset');
-                });
+        // promote data-src -> src (with one-time cache-bust on iOS)
+        function promote(img) {
+            const real = img.dataset.src;
+            if (!real) return;
+
+            if (isIOS && !img.dataset.busted) {
+                const sep = real.includes('?') ? '&' : '?';
+                img.src = real + sep + 't=' + Date.now(); // nudge Safari to actually load
+                img.dataset.busted = '1';
+            } else {
+                img.src = real;
             }
-            if (img.dataset.srcset) {
-                img.srcset = img.dataset.srcset;
-                img.removeAttribute('data-srcset');
-            }
-            if (img.dataset.src) {
-                // Safari-specific: Force reload by breaking cache
-                img.src = img.dataset.src + (img.dataset.src.includes('?') ? '&' : '?') + 't=' + Date.now();
-                img.removeAttribute('data-src');
-            }
-            img.loading = 'eager';
+            img.removeAttribute('data-src');
+            img.loading = 'eager'; // hint Safari not to defer further
         }
 
-        async function upgrade(img) {
-            if (img.classList.contains('lazy-loaded')) return;
+        // heavy nudge for stubborn Safari: reinsert node
+        function reinsertIfIOS(img) {
+            if (!isIOS || !img.parentNode) return img;
+            const next = img.nextSibling;
+            const clone = img.cloneNode(true); // events aren’t needed on <img>
+            img.parentNode.removeChild(img);
+            img.parentNode.insertBefore(clone, next);
+            return clone;
+        }
 
-            // Add loading state
+        function markLoaded(img) {
+            img.classList.remove('lazy-loading');
+            img.classList.add('lazy-loaded');
+            img.__loading = false;
+        }
+        function markError(img) {
+            img.classList.remove('lazy-loading');
+            img.classList.add('lazy-error');
+            img.__loading = false;
+        }
+
+        function upgrade(img) {
+            if (img.__loading || img.classList.contains('lazy-loaded')) return;
+            img.__loading = true;
             img.classList.add('lazy-loading');
 
-            promoteSources(img);
+            promote(img);
+            const node = reinsertIfIOS(img);
 
-            // Safari-specific: Force load by removing and re-adding to DOM
-            const parent = img.parentNode;
-            const nextSibling = img.nextSibling;
-            const clone = img.cloneNode(true);
-
-            parent.removeChild(img);
-            parent.insertBefore(clone, nextSibling);
-
-            try {
-                if (clone.decode) await clone.decode();
-            } catch (e) {
-                console.log('Image decode failed, continuing anyway:', e);
+            if (node.complete && node.naturalWidth) {
+                markLoaded(node);
+                return;
             }
-
-            clone.classList.remove('lazy-loading');
-            clone.classList.add('lazy-loaded');
+            node.addEventListener('load',  () => markLoaded(node), { once: true });
+            node.addEventListener('error', () => markError(node),  { once: true });
         }
 
-        function initLazyImages(rootEl = document) {
-            const imgs = $$('img.lazy:not(.lazy-loaded)', rootEl);
+        function runLazy(root = document) {
+            const imgs = $$('img.lazy:not(.lazy-loaded)', root);
             if (!imgs.length) return;
-
-            const scrollRoot = nearestScrollRoot(rootEl) || nearestScrollRoot(imgs[0]) || null;
-            const target = scrollRoot || window;
-
-            const marginPx = Math.max(400, Math.round((window.innerHeight || 800)));
 
             let ticking = false;
             const check = () => {
@@ -105,88 +93,58 @@
                 requestAnimationFrame(() => {
                     imgs.forEach(img => {
                         if (!img.isConnected || img.classList.contains('lazy-loaded')) return;
-                        if (inViewport(img, scrollRoot || window, marginPx)) upgrade(img);
+                        if (inViewport(img, 800)) upgrade(img);
                     });
                     ticking = false;
                 });
             };
 
-            // Enhanced event listeners for iOS
             const onScroll = () => check();
             const onResize = () => check();
-            const onVis = () => {
-                // Force check when page becomes visible again
-                setTimeout(check, 100);
-            };
+            const onShow   = () => setTimeout(check, 100);
 
-            target.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('scroll', onScroll, { passive: true });
             window.addEventListener('resize', onResize, { passive: true });
             window.addEventListener('orientationchange', onResize, { passive: true });
-            document.addEventListener('visibilitychange', onVis);
-            document.addEventListener('webkitvisibilitychange', onVis); // Safari
-            window.addEventListener('pageshow', (e) => {
-                // Fix for Safari back/forward cache
-                if (e.persisted) setTimeout(check, 100);
-            }, { passive: true });
-            window.addEventListener('focus', onVis, { passive: true });
-
-            // More aggressive iOS touch events
-            window.addEventListener('touchstart', onScroll, { passive: true });
+            document.addEventListener('visibilitychange', onShow);
+            window.addEventListener('pageshow', (e) => { if (e.persisted) setTimeout(check, 100); }, { passive: true });
+            window.addEventListener('focus', onShow, { passive: true });
             window.addEventListener('touchmove', onScroll, { passive: true });
-            window.addEventListener('touchend', onScroll, { passive: true });
 
-            // Initial check with delays for Safari
-            setTimeout(check, 100);
-            setTimeout(check, 500);
+            // initial passes (Safari sometimes needs a couple frames)
+            setTimeout(check, 50);
+            setTimeout(check, 300);
 
-            // Safety polling
-            const safety = setInterval(check, 300);
-            setTimeout(() => clearInterval(safety), 10000);
-
-            // Mutation Observer for dynamic content
-            const mo = new MutationObserver((muts) => {
-                let shouldCheck = false;
-                muts.forEach(m => m.addedNodes.forEach(n => {
-                    if (n.nodeType === 1) {
-                        if (n.matches && n.matches('img.lazy:not(.lazy-loaded)')) shouldCheck = true;
-                        if ($$('img.lazy:not(.lazy-loaded)', n).length) shouldCheck = true;
-                    }
-                }));
-                if (shouldCheck) {
-                    setTimeout(check, 100);
-                }
-            });
-            mo.observe(rootEl, { childList: true, subtree: true });
+            // safety: force any remaining after a short grace period
+            const safety1 = setTimeout(() => $$('img.lazy:not(.lazy-loaded)', root).forEach(upgrade), 2000);
+            const safety2 = setTimeout(() => $$('img.lazy:not(.lazy-loaded)', root).forEach(upgrade), 5000);
 
             return {
                 refresh: () => setTimeout(check, 100),
                 destroy() {
-                    target.removeEventListener('scroll', onScroll);
+                    window.removeEventListener('scroll', onScroll);
                     window.removeEventListener('resize', onResize);
                     window.removeEventListener('orientationchange', onResize);
-                    document.removeEventListener('visibilitychange', onVis);
-                    document.removeEventListener('webkitvisibilitychange', onVis);
-                    window.removeEventListener('pageshow', onVis);
-                    window.removeEventListener('focus', onVis);
-                    window.removeEventListener('touchstart', onScroll);
+                    document.removeEventListener('visibilitychange', onShow);
+                    window.removeEventListener('pageshow', onShow);
+                    window.removeEventListener('focus', onShow);
                     window.removeEventListener('touchmove', onScroll);
-                    window.removeEventListener('touchend', onScroll);
-                    mo.disconnect();
-                    clearInterval(safety);
+                    clearTimeout(safety1);
+                    clearTimeout(safety2);
                 }
             };
         }
 
-        // Initialize when DOM is ready
+        // auto-init + expose for injected pages
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => initLazyImages());
+            document.addEventListener('DOMContentLoaded', () => runLazy());
         } else {
-            initLazyImages();
+            runLazy();
         }
-
-        window.initLazyImages = initLazyImages;
+        window.initLazyImages = runLazy;
     })();
 </script>
+
 
 
 
