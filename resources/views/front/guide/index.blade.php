@@ -13,137 +13,102 @@
         /* -webkit-overflow-scrolling: touch;  // if this causes issues, try removing it */
     }
 </style>
+<style>
+    /* Smooth fade-in effect for lazy-loaded images */
+    img.lazy {
+        opacity: 0;
+        transition: opacity 0.6s ease;
+    }
+
+    img.lazy.lazy-loaded {
+        opacity: 1;
+    }
+</style>
+
 <script>
     (() => {
-        const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-        // iOS / Safari detection
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-        // viewport check (with generous margin)
-        function inViewport(el, margin = 800) {
-            const r = el.getBoundingClientRect();
-            const vh = window.innerHeight || document.documentElement.clientHeight;
-            const vw = window.innerWidth  || document.documentElement.clientWidth;
-            return r.bottom >= -margin && r.top <= vh + margin && r.right >= -margin && r.left <= vw + margin;
-        }
-
-        // promote data-src -> src (with one-time cache-bust on iOS)
-        function promote(img) {
-            const real = img.dataset.src;
-            if (!real) return;
-
-            if (isIOS && !img.dataset.busted) {
-                const sep = real.includes('?') ? '&' : '?';
-                img.src = real + sep + 't=' + Date.now(); // nudge Safari to actually load
-                img.dataset.busted = '1';
-            } else {
-                img.src = real;
+        function promoteSources(img) {
+            const pic = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
+            if (pic) {
+                pic.querySelectorAll('source[data-srcset]').forEach(s => {
+                    s.srcset = s.dataset.srcset;
+                    s.removeAttribute('data-srcset');
+                });
             }
-            img.removeAttribute('data-src');
-            img.loading = 'eager'; // hint Safari not to defer further
+            if (img.dataset.srcset) {
+                img.srcset = img.dataset.srcset;
+                img.removeAttribute('data-srcset');
+            }
+            if (img.dataset.src) {
+                img.src = img.dataset.src + (img.dataset.src.includes('?') ? '&' : '?') + 't=' + Date.now();
+                img.removeAttribute('data-src');
+            }
+            img.loading = 'eager';
         }
 
-        // heavy nudge for stubborn Safari: reinsert node
-        function reinsertIfIOS(img) {
-            if (!isIOS || !img.parentNode) return img;
-            const next = img.nextSibling;
-            const clone = img.cloneNode(true); // events aren’t needed on <img>
-            img.parentNode.removeChild(img);
-            img.parentNode.insertBefore(clone, next);
-            return clone;
-        }
+        async function upgrade(img) {
+            if (img.classList.contains('lazy-loaded')) return;
 
-        function markLoaded(img) {
+            img.classList.add('lazy-loading');
+            promoteSources(img);
+
+            try {
+                if (img.decode) await img.decode();
+            } catch (e) {
+                console.log('Image decode failed:', e);
+            }
+
             img.classList.remove('lazy-loading');
             img.classList.add('lazy-loaded');
-            img.__loading = false;
-        }
-        function markError(img) {
-            img.classList.remove('lazy-loading');
-            img.classList.add('lazy-error');
-            img.__loading = false;
         }
 
-        function upgrade(img) {
-            if (img.__loading || img.classList.contains('lazy-loaded')) return;
-            img.__loading = true;
-            img.classList.add('lazy-loading');
+        function initLazyImages(rootEl = document) {
+            const imgs = $$('img.lazy:not(.lazy-loaded)', rootEl);
+            if (!imgs.length || !('IntersectionObserver' in window)) return;
 
-            promote(img);
-            const node = reinsertIfIOS(img);
-
-            if (node.complete && node.naturalWidth) {
-                markLoaded(node);
-                return;
-            }
-            node.addEventListener('load',  () => markLoaded(node), { once: true });
-            node.addEventListener('error', () => markError(node),  { once: true });
-        }
-
-        function runLazy(root = document) {
-            const imgs = $$('img.lazy:not(.lazy-loaded)', root);
-            if (!imgs.length) return;
-
-            let ticking = false;
-            const check = () => {
-                if (ticking) return;
-                ticking = true;
-                requestAnimationFrame(() => {
-                    imgs.forEach(img => {
-                        if (!img.isConnected || img.classList.contains('lazy-loaded')) return;
-                        if (inViewport(img, 800)) upgrade(img);
-                    });
-                    ticking = false;
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        upgrade(img);
+                        obs.unobserve(img);
+                    }
                 });
-            };
+            }, {
+                rootMargin: '400px 0px',
+                threshold: 0.01
+            });
 
-            const onScroll = () => check();
-            const onResize = () => check();
-            const onShow   = () => setTimeout(check, 100);
+            imgs.forEach(img => observer.observe(img));
 
-            window.addEventListener('scroll', onScroll, { passive: true });
-            window.addEventListener('resize', onResize, { passive: true });
-            window.addEventListener('orientationchange', onResize, { passive: true });
-            document.addEventListener('visibilitychange', onShow);
-            window.addEventListener('pageshow', (e) => { if (e.persisted) setTimeout(check, 100); }, { passive: true });
-            window.addEventListener('focus', onShow, { passive: true });
-            window.addEventListener('touchmove', onScroll, { passive: true });
-
-            // initial passes (Safari sometimes needs a couple frames)
-            setTimeout(check, 50);
-            setTimeout(check, 300);
-
-            // safety: force any remaining after a short grace period
-            const safety1 = setTimeout(() => $$('img.lazy:not(.lazy-loaded)', root).forEach(upgrade), 2000);
-            const safety2 = setTimeout(() => $$('img.lazy:not(.lazy-loaded)', root).forEach(upgrade), 5000);
+            const mo = new MutationObserver(muts => {
+                muts.forEach(m => m.addedNodes.forEach(n => {
+                    if (n.nodeType === 1) {
+                        if (n.matches?.('img.lazy:not(.lazy-loaded)')) observer.observe(n);
+                        $$('img.lazy:not(.lazy-loaded)', n).forEach(img => observer.observe(img));
+                    }
+                }));
+            });
+            mo.observe(rootEl, { childList: true, subtree: true });
 
             return {
-                refresh: () => setTimeout(check, 100),
-                destroy() {
-                    window.removeEventListener('scroll', onScroll);
-                    window.removeEventListener('resize', onResize);
-                    window.removeEventListener('orientationchange', onResize);
-                    document.removeEventListener('visibilitychange', onShow);
-                    window.removeEventListener('pageshow', onShow);
-                    window.removeEventListener('focus', onShow);
-                    window.removeEventListener('touchmove', onScroll);
-                    clearTimeout(safety1);
-                    clearTimeout(safety2);
-                }
+                refresh: () => $$('img.lazy:not(.lazy-loaded)', rootEl).forEach(img => observer.observe(img)),
+                destroy: () => observer.disconnect()
             };
         }
 
-        // auto-init + expose for injected pages
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => runLazy());
+            document.addEventListener('DOMContentLoaded', () => initLazyImages());
         } else {
-            runLazy();
+            initLazyImages();
         }
-        window.initLazyImages = runLazy;
+
+        window.initLazyImages = initLazyImages;
     })();
 </script>
+
 
 
 

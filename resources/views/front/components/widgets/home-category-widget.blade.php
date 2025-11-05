@@ -20,21 +20,20 @@
                             <img
                                 class="lazy d-block w-100"
                                 src="{!! asset('/front/images/common/placeholder.jpg') !!}"
-                            data-src="{!! live_asset('storage/'.$customJobs->images[0]->path) !!}"
-                            onerror="this.onerror=null; this.src='{!! asset('storage/'.$customJobs->images[0]->path) !!}'"
-                            loading="lazy"
-                            decoding="async"
-                            sizes="100vw"
-                            alt="Shop Logo"
-                            width="130" height="130"
+                                data-src="{!! live_asset('storage/'.$customJobs->images[0]->path) !!}"
+                                onerror="this.onerror=null; this.src='{!! asset('storage/'.$customJobs->images[0]->path) !!}'"
+                                decoding="async"
+                                sizes="100vw"
+                                alt="Shop Logo"
+                                width="130" height="130"
                             />
+
                         @else
                             <img
                                 class="lazy d-block w-100"
                                 src="{!! asset('/front/images/common/placeholder.jpg') !!}"
                                 data-src="{!! live_asset('storage/' .$customJobs->subCategories[0]->logo) !!}"
                                 onerror="this.onerror=null; this.src='{!! asset('storage/' .$customJobs->subCategories[0]->logo) !!}'"
-                                loading="lazy"
                                 decoding="async"
                                 sizes="100vw"
                                 alt="Shop Logo"
