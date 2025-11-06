@@ -15,6 +15,9 @@ Route::get('/clear-cache', function() {
 // Define a route with a prefix
 Route::prefix('guide')->group(function () {
     Route::get('/', [GuideFrontController::class, 'index'])->name('guide.index');
+//    Route::get('test/{id?}', [GuideFrontController::class, 'getCustomerPage'])->name('guide.index');
+
+
     Route::get('/get-home-page', [GuideFrontController::class, 'getHomePage'])->name('guide.homePage');
     Route::get('/get-sub-category-page', [GuideFrontController::class, 'getSubCategoryPage'])->name('guide.subCategoryPage');
     Route::get('/get-customer-page/{id}', [GuideFrontController::class, 'getCustomerPage'])->name('guide.customerPage');

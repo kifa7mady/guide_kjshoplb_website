@@ -30,8 +30,13 @@ class GuideFrontController extends Controller
         return view('front.guide.home' , compact('regions','categories'));
     }
 
-    public function getCustomerPage(){
-        return view('front.guide.customer-page');
+    public function getCustomerPage($id){
+        $region = View::shared('region');
+        $customerJob = CustomerJob::findOrFail($id);
+        if(empty($region) && !empty($customerJob)){
+            $region = Region::find($customerJob->region_id);
+        }
+        return view('front.guide.customer-page',compact('customerJob','region'));
     }
 
     public function getSubCategoryPage(){

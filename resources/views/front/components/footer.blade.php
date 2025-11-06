@@ -29,7 +29,7 @@
 <div class="sticky-footer">
     <div class="item d-column active">
         <svg class="icon icon-home">
-            <use xlink:href="{!! asset('front/icons/icon-home.svg') !!}#icon-home"></use>
+            <use xlink:href="{!! asset('front/icons/icon-home2.svg') !!}#icon-home"></use>
         </svg>
         <label>Home</label>
     </div>
