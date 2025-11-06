@@ -15,7 +15,7 @@
         @foreach($categories[$category_key]->CustomerJobsByCategory as $customJobs)
             <div class="hct-item d-column">
                 @if(isset($customJobs->categories) && isset($customJobs->categories[0]))
-                    <div class="hct-img" data-id="{!! $customJobs->id !!}">
+                    <div class="hct-img" data-url="{!! route('guide.customerPage',['id'=>$customJobs->id ])!!}">
                         <div class="lazy-wrapper">
                         @if(!$customJobs->images->isEmpty())
                             <img

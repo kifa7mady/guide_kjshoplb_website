@@ -2,10 +2,14 @@
     <div class="container mt-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
                 @if(!empty($region))
                     <li class="breadcrumb-item " ><a href="{!! $region->seo_url !!}">{!! $region->getTranslation('name', 'en') !!}</a></li>
                 @endif
+            </ol>
+        </nav>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+             
 
                 @if($customerJob->categories->isNotEmpty())
                     <li class="breadcrumb-item">

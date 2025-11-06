@@ -27,7 +27,7 @@
 {{--    </p>--}}
 {{--</footer>--}}
 <div class="sticky-footer">
-    <div class="item d-column active">
+    <div class="item d-column active" data-url="{!! route('guide.homePage') !!}">
         <svg class="icon icon-home">
             <use xlink:href="{!! asset('front/icons/icon-home2.svg') !!}#icon-home"></use>
         </svg>
