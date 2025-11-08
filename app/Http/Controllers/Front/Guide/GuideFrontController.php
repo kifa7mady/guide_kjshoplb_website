@@ -36,6 +36,7 @@ class GuideFrontController extends Controller
         if(empty($region) && !empty($customerJob)){
             $region = Region::find($customerJob->region_id);
         }
+
         return view('front.guide.customer-page',compact('customerJob','region'));
     }
 

@@ -2,9 +2,9 @@
 <div class="header">
     <div class="container">
         <div class="header-wrapper d-jc-between d-ai-center">
-            <a class="d-flex d-column header-logo d-ai-center" href="/">
+            <div class="d-flex d-column header-logo d-ai-center">
                 <img src="{!! asset('front/images/common/logo.svg') !!}" width="60" />
-            </a>
+            </div>
             <div class="header-r d-flex d-wrap">
                 <div class="header-r-icon search-icon">
                     <svg class="icon icon-search">

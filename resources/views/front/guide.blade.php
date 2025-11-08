@@ -8,13 +8,14 @@
 </head>
 
 <body>
-@include('front.components.header')
-
 <main>
+    @include('front.components.header')
 
-    @yield('content')
+    <section class="content">
+        @yield('content')
+    </section>
+
+    @include('front.components.footer')
 </main>
-
-@include('front.components.footer')
 </body>
 </html>

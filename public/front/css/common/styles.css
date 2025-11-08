@@ -22,7 +22,7 @@ body {
     padding: 15px;
 }
 
-.guide-loader{
+.guide-loader {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,7 +30,7 @@ body {
     height: 70vh;
 }
 
-.guide-loader img{
+.guide-loader img {
     width: 50px;
     height: 50px;
 }
@@ -92,10 +92,14 @@ section {
 
 
 main {
+    height: 100%;;
+}
+
+section.content {
     min-height: calc(100vh - 100px);
 }
 
-.sticky-footer{
+.sticky-footer {
     background-color: #fff;
     position: sticky;
     bottom: 0;
@@ -106,7 +110,7 @@ main {
     justify-content: space-between;
     align-items: center;
     padding: 5px;
-    box-shadow: 0 -10px 20px -12px rgba(0,0,0,0.25);
+    box-shadow: 0 -10px 20px -12px rgba(0, 0, 0, 0.25);
 }
 
 .sticky-footer .item {
@@ -117,13 +121,14 @@ main {
     position: relative;
     text-align: center;
 }
-.sticky-footer .item .icon{
+
+.sticky-footer .item .icon {
     width: 20px;
     height: 20px;
     fill: var(--primary-color);
 }
 
-.sticky-footer .item .icon-health{
+.sticky-footer .item .icon-health {
     fill: #fff;
     background-color: var(--primary-color);
     padding: 7px;
@@ -133,19 +138,19 @@ main {
     margin-top: -25px;
 }
 
-.sticky-footer .item label{
+.sticky-footer .item label {
     text-transform: uppercase;
     font-size: 8px;
     border-bottom: solid 2px transparent;
     color: var(--primary-color);
 }
 
-.sticky-footer .item.item-health label{
+.sticky-footer .item.item-health label {
     text-transform: uppercase;
     margin-top: 5px;
 }
 
-.sticky-footer .item.active label{
+.sticky-footer .item.active label {
     border-color: var(--primary-color);
 }
 

@@ -8,10 +8,10 @@
 <!-- HTML -->
 
 <style>
-    main {
-        overflow-y: auto;
-        /* -webkit-overflow-scrolling: touch;  // if this causes issues, try removing it */
-    }
+    /*section.content {*/
+    /*    overflow-y: auto;*/
+    /*    !* -webkit-overflow-scrolling: touch;  // if this causes issues, try removing it *!*/
+    /*}*/
 </style>
 <style>
     /* Smooth fade-in effect for lazy-loaded images */
@@ -208,17 +208,24 @@
 
         // ---- Initial home load ----
         function loadGuideHome(delayMs = 500) {
-            loadInto($('main'), HOME_URL, { delayMs });
+            loadInto($('section'), HOME_URL, { delayMs });
         }
 
         // ---- Delegated navigation for any [data-url] click ----
         let inFlight = false;
         document.addEventListener('click', async ev => {
+
             const el = ev.target.closest('[data-url]');
             if (!el || inFlight) return;
 
-            const main = $('main');
+            let main;
+            if (el.classList.contains('hct-img')) {
+                main = $('main');
+            } else {
+                main = $('section');
+            }
             if (!main) return;
+
 
             inFlight = true;
             // Clear quickly for snappier feel; loadInto will show its own loader
