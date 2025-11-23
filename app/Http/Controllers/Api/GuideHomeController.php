@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Region;
 use App\Models\Category;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 
 class GuideHomeController extends Controller
 {
     public function home(): JsonResponse
     {
-        $categories = Category::select('categories.id', 'categories.name', 'categories.logo')
+        $categories = Category::select('categories.id', 'categories.name', DB::raw("CONCAT('https://alpha.kjshoplb.com/storage/', categories.logo) as logo"))
             ->where('parent_id', '>', 0)
             ->with([
                 'parent',
