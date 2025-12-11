@@ -33,11 +33,10 @@ class GuideHomeController extends Controller
                 $data[$key]['customers'][$customer_key]['permalink']= $customerJobsByCategory->permalink;
             }
         }
-        dd($data,$category->CustomerJobsByCategory);
 
         return response()->json([
             'status' => true,
-            'data' => $categories,
+            'data' => $data,
         ]);
     }
 }
