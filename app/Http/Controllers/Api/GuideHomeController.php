@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerJob;
 use App\Models\Region;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,23 @@ class GuideHomeController extends Controller
         foreach ($categories as $key=> $category) {
             $data[$key]['category_name'] = $category->name;
             $data[$key]['category_logo'] = $category->logo;
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function featuredCustomers(): JsonResponse
+    {
+
+        $data = [];
+        $customerJobs = CustomerJob::with('images')->limit(5)->get();
+        foreach($customerJobs as $key => $customerJob){
+            $data[$key]['customer_name']= $customerJob->name;
+            $data[$key]['permalink']= $customerJob->permalink;
+            $data[$key]['images']= $customerJob->images;
         }
 
         return response()->json([
