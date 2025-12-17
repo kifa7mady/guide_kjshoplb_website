@@ -39,4 +39,26 @@ class GuideHomeController extends Controller
             'data' => $data,
         ]);
     }
+
+    public function allCategories(): JsonResponse
+    {
+        $categories = Category::query()
+            ->where('parent_id', '>', 0)
+            ->withCount('CustomerJobsByCategory')
+            ->has('CustomerJobsByCategory', '>', 1)
+            ->orderByDesc('customer_jobs_by_category_count')
+            ->orderBy('priority')
+            ->get();
+
+        $data = [];
+        foreach ($categories as $key=> $category) {
+            $data[$key]['category_name'] = $category->name;
+            $data[$key]['category_logo'] = $category->logo;
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ]);
+    }
 }
