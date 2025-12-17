@@ -20,4 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::get('/guide/home', [GuideHomeController::class, 'home']);
-Route::get('/guide/allCategories', [GuideHomeController::class, 'allCategories']);
+Route::get('/guide/all-categories', [GuideHomeController::class, 'allCategories']);
