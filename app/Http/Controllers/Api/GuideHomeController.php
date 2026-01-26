@@ -9,8 +9,6 @@ use App\Models\Region;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
-
 
 class GuideHomeController extends Controller
 {
@@ -66,7 +64,7 @@ class GuideHomeController extends Controller
                         ? implode(', ', $customerName)
                         : (string) $customerName,
                     'customer_job_image' => $job->images->first()
-                        ? Storage::url($job->images->first()->path)
+                        ? asset('storage/' . ltrim($job->images->first()->path, '/'))
                         : null,
                 ];
             });
