@@ -53,7 +53,7 @@ class GuideHomeController extends Controller
 
         $data = [];
         foreach ($categories as $key=> $category) {
-            $data[$key]['category_name'] = $category->name;
+            $data[$key]['category_name'] = $category->getTranslation('name', 'en');
             $data[$key]['category_logo'] = $category->logo;
         }
 
