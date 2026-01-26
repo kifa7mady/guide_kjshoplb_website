@@ -19,6 +19,6 @@ use App\Http\Controllers\Api\GuideHomeController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/guide/home', [GuideHomeController::class, 'home']);
-Route::get('/guide/all-categories', [GuideHomeController::class, 'allCategories']);
-Route::get('/guide/featured-customers', [GuideHomeController::class, 'featuredCustomers']);
+Route::get('/home', [GuideHomeController::class, 'home']);
+Route::get('/categories/{id?}', [GuideHomeController::class, 'categories']);
+Route::get('/featured-customers', [GuideHomeController::class, 'featuredCustomers']);

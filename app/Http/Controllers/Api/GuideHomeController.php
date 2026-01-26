@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerCategory;
 use App\Models\CustomerJob;
 use App\Models\Region;
 use App\Models\Category;
@@ -41,26 +42,60 @@ class GuideHomeController extends Controller
         ]);
     }
 
-    public function allCategories(): JsonResponse
+    public function categories($id=0): JsonResponse
     {
-        $categories = Category::query()
-            ->where('parent_id', '>', 0)
-            ->withCount('CustomerJobsByCategory')
-            ->has('CustomerJobsByCategory', '>', 1)
-            ->orderByDesc('customer_jobs_by_category_count')
-            ->orderBy('priority')
-            ->get();
+        if($id){
+            $customerJobs = CustomerJob::query()
+                ->select(['id', 'name', 'customer_id']) // only what you need
+                ->whereHas('subCategories', fn ($q) => $q->where('category_id', $id))
+                ->with([
+                    // only needed columns
+                    'customer:id,customer_name',
+                    // load only first image (Laravel 8.41+ / 9+)
+                    'images' => fn ($q) => $q->select(['id', 'customer_job_id', 'path'])->limit(1),
+                ])
+                ->get()
+                ->map(function ($job) {
+                    $customerName = $job->customer?->customer_name;
 
-        $data = [];
-        foreach ($categories as $key=> $category) {
-            $data[$key]['category_name'] = $category->getTranslation('name', 'en');
-            $data[$key]['category_icon'] = $category->icon;
+                    return [
+                        'customer_job_id'   => $job->id,
+                        'customer_job_name' => $job->name,
+                        'customer_name'     => is_array($customerName)
+                            ? implode(', ', $customerName)
+                            : (string) $customerName,
+                        'customer_job_image' => $job->images->first()
+                            ? asset($job->images->first()->path)
+                            : null,
+                    ];
+                });
+
+            return response()->json([
+                'status' => true,
+                'data'   => $customerJobs,
+            ]);
+        }else{
+            $categories = Category::query()
+                ->where('parent_id', '>', 0)
+                ->withCount('CustomerJobsByCategory')
+                ->has('CustomerJobsByCategory', '>', 1)
+                ->orderByDesc('customer_jobs_by_category_count')
+                ->orderBy('priority')
+                ->get();
+
+            $data = [];
+            foreach ($categories as $key=> $category) {
+                $data[$key]['category_id'] = $category->id;
+                $data[$key]['category_name'] = $category->getTranslation('name', 'en');
+                $data[$key]['category_icon'] = $category->icon;
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+            ]);
         }
 
-        return response()->json([
-            'status' => true,
-            'data' => $data,
-        ]);
     }
 
     public function featuredCustomers(): JsonResponse
