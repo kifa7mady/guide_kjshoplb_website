@@ -44,6 +44,11 @@ class GuideHomeController extends Controller
     public function allCategories(): JsonResponse
     {
         $categories = Category::query()
+            ->select([
+                'id',
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) as name"),
+                'icon',
+            ])
             ->where('parent_id', '>', 0)
             ->withCount('CustomerJobsByCategory')
             ->has('CustomerJobsByCategory', '>', 1)
