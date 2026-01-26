@@ -21,7 +21,7 @@ class GuideHomeController extends Controller
                 'CustomerJobsByCategory',
             ])
             ->withCount('CustomerJobsByCategory')
-            ->has('CustomerJobsByCategory', '>', 1)
+//            ->has('CustomerJobsByCategory', '>', 1)
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get();
