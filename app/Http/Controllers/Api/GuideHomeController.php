@@ -64,7 +64,7 @@ class GuideHomeController extends Controller
                         ? implode(', ', $customerName)
                         : (string) $customerName,
                     'customer_job_image' => $job->images->first()
-                        ? asset($job->images->first()->path)
+                        ? asset('storage',$job->images->first()->path)
                         : null,
                 ];
             });
