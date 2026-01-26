@@ -9,6 +9,8 @@ use App\Models\Region;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
 
 class GuideHomeController extends Controller
 {
@@ -74,27 +76,29 @@ class GuideHomeController extends Controller
             'data'   => $customerJobs,
         ]);
     }
-    public function categories(): JsonResponse
+    public function categories(Request $request): JsonResponse
     {
+        $parentId = $request->integer('parent_id'); // null if not provided
 
-        $categories = Category::query()
-            ->where('parent_id', '>', 0)
-            ->withCount('CustomerJobsByCategory')
+        $data = Category::query()
+            ->select(['id', 'name', 'icon', 'priority', 'parent_id'])
+            ->having('customer_jobs_by_category_count', '>', 0)
 //            ->has('CustomerJobsByCategory', '>', 1)
+            ->where('parent_id', $parentId)
+            ->withCount('CustomerJobsByCategory')
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
-            ->get();
-
-        $data = [];
-        foreach ($categories as $key=> $category) {
-            $data[$key]['category_id'] = $category->id;
-            $data[$key]['category_name'] = $category->getTranslation('name', 'en');
-            $data[$key]['category_icon'] = $category->icon;
-        }
+            ->get()
+            ->map(fn ($category) => [
+                'category_id'   => $category->id,
+                'category_name' => $category->getTranslation('name', 'en'),
+                'category_icon' => $category->icon,
+            ])
+            ->values();
 
         return response()->json([
             'status' => true,
-            'data' => $data,
+            'data'   => $data,
         ]);
     }
 
