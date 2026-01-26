@@ -21,7 +21,7 @@ class GuideHomeController extends Controller
                 'CustomerJobsByCategory',
             ])
             ->withCount('CustomerJobsByCategory')
-//            ->has('CustomerJobsByCategory', '>', 1)
+            ->has('CustomerJobsByCategory', '>', 1)
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get();
@@ -80,7 +80,7 @@ class GuideHomeController extends Controller
         $categories = Category::query()
             ->where('parent_id', '>', 0)
             ->withCount('CustomerJobsByCategory')
-            ->has('CustomerJobsByCategory', '>', 1)
+//            ->has('CustomerJobsByCategory', '>', 1)
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get();
