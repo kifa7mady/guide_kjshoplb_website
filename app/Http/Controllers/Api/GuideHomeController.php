@@ -43,9 +43,10 @@ class GuideHomeController extends Controller
     }
 
     public function customerJobs(){
+        $category_id = request()->category_id;
         $customerJobs = CustomerJob::query()
             ->select(['id', 'name', 'customer_id']) // only what you need
-            ->whereHas('subCategories', fn ($q) => $q->where('category_id', $id))
+            ->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id))
             ->with([
                 // only needed columns
                 'customer:id,customer_name',
