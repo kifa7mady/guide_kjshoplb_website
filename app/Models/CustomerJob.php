@@ -29,12 +29,12 @@ class CustomerJob extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'customer_categories', 'customer_job_id', 'parent_category_id');
+        return $this->belongsToMany(Category::class, 'category_customer_job', 'customer_job_id', 'parent_category_id');
     }
 
     public function subCategories()
     {
-        return $this->belongsToMany(Category::class, 'customer_categories', 'customer_job_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'category_customer_job', 'customer_job_id', 'category_id');
     }
 
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\CustomerCategory;
 use App\Models\CustomerJob;
 use App\Models\Region;
 use App\Models\Category;
@@ -20,10 +19,10 @@ class GuideHomeController extends Controller
             ->where('parent_id', '>', 0)
             ->with([
                 'parent',
-                'CustomerJobsByCategory',
+                'customerJobsByCategory',
             ])
-            ->withCount('CustomerJobsByCategory')
-            ->has('CustomerJobsByCategory', '>', 1)
+            ->withCount('customerJobsByCategory')
+            ->has('customerJobsByCategory', '>', 1)
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get();
@@ -32,7 +31,7 @@ class GuideHomeController extends Controller
         foreach ($categories as $key=> $category) {
             $data[$key]['category_name'] = $category->name;
             $data[$key]['category_logo'] = $category->logo;
-            foreach($category->CustomerJobsByCategory as $customer_key => $customerJobsByCategory){
+            foreach($category->customerJobsByCategory as $customer_key => $customerJobsByCategory){
                 $data[$key]['customers'][$customer_key]['customer_name']= $customerJobsByCategory->name;
                 $data[$key]['customers'][$customer_key]['permalink']= $customerJobsByCategory->permalink;
             }
@@ -46,6 +45,8 @@ class GuideHomeController extends Controller
 
     public function customerJobs(){
         $category_id = request()->category_id;
+        $region_id = request()->region_id;
+
         $customerJobs = CustomerJob::query()
             ->select(['id', 'name', 'customer_id']) // only what you need
             ->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id))
@@ -78,14 +79,53 @@ class GuideHomeController extends Controller
     }
     public function categories(Request $request): JsonResponse
     {
+        $filterByCustomerJobs = $request->boolean('customer_jobs_by_category');
+        $region_id = $request->integer('region_id'); // null if not provided
+        $parents = Category::query()
+            ->where('parent_id', 0)
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon']);
+
+        $children = Category::query()
+            ->where('parent_id', '>', 0)
+            ->when($filterByCustomerJobs, fn ($q) => $q->has('customerJobsByCategory')->withCount('customerJobsByCategory'))
+            ->when($region_id, fn ($q) => $q->whereHas('customerJobsByCategory', fn ($q) => $q->where('region_id', $region_id)))
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name', 'icon'])
+            ->groupBy('parent_id');
+
+        $data = $parents->map(function ($parent) use ($children) {
+
+            return [
+                'category_id'   => $parent->id,
+                'category_name' => $parent->getTranslation('name', 'en'),
+                'category_icon' => $parent->icon,
+                'children'      => ($children[$parent->id] ?? collect())
+                    ->map(fn ($c) => [
+                        'category_id'   => $c->id,
+                        'category_name' => $c->getTranslation('name', 'en'),
+                        'category_icon' => $c->icon,
+                        'parent_id'     => $c->parent_id,
+                    ])
+                    ->values(),
+            ];
+        })->values();
+
+        return response()->json([
+            'status' => true,
+            'data'   => $data,
+        ]);
+    }
+    public function topCategories(Request $request): JsonResponse
+    {
         $parentId = $request->integer('parent_id'); // null if not provided
 
         $data = Category::query()
             ->select(['id', 'name', 'icon', 'priority', 'parent_id'])
             ->having('customer_jobs_by_category_count', '>', 0)
-//            ->has('CustomerJobsByCategory', '>', 1)
+//            ->has('customerJobsByCategory', '>', 1)
             ->where('parent_id', $parentId)
-            ->withCount('CustomerJobsByCategory')
+            ->withCount('customerJobsByCategory')
             ->orderByDesc('customer_jobs_by_category_count')
             ->orderBy('priority')
             ->get()
@@ -110,6 +150,26 @@ class GuideHomeController extends Controller
         $customerJobs = CustomerJob::with('images')->limit(5)->get();
         foreach($customerJobs as $key => $customerJob){
             $data[$key]['customer_name']= $customerJob->name;
+            $data[$key]['permalink']= $customerJob->permalink;
+            $data[$key]['images']= $customerJob->images;
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ]);
+    }
+
+
+    public function regions(): JsonResponse
+    {
+
+        $data = [];
+
+        $regions = Region::with('customerJobs')->get();
+        foreach($regions as $key => $region){
+            $data[$key]['region_name']= $region->getTranslation('name', 'en');
+            dd($region);
             $data[$key]['permalink']= $customerJob->permalink;
             $data[$key]['images']= $customerJob->images;
         }

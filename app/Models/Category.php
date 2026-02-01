@@ -18,27 +18,27 @@ class Category extends Model
 //        return $this->belongsToMany(Customer::class, 'customer_categories', 'category_id', 'customer_id');
 //    }
 
-    public function CustomerJobsByCategory()
+    public function customerJobsByCategory()
     {
         return $this->hasManyThrough(
             CustomerJob::class,
-            CustomerCategory::class,
-            'category_id', // Foreign key on customer_categories table
-            'id', // Foreign key on customers table
+            CategoryCustomerJob::class,
+            'category_id', // Foreign key on category_customer_job table
+            'id', // Foreign key on customer_jobs table
             'id', // Local key on categories table
-            'customer_job_id' // Local key on customer_categories table
+            'customer_job_id' // Local key on category_customer_job table
         );
     }
 
-    public function CustomerJobsByParentCategory()
+    public function customerJobsByParentCategory()
     {
         return $this->hasManyThrough(
             CustomerJob::class,
-            CustomerCategory::class,
-            'parent_category_id', // Foreign key on customer_categories table
-            'id', // Foreign key on customers table
+            CategoryCustomerJob::class,
+            'parent_category_id', // Foreign key on category_customer_job table
+            'id', // Foreign key on customer_jobs table
             'id', // Local key on categories table
-            'customer_job_id' // Local key on customer_categories table
+            'customer_job_id' // Local key on category_customer_job table
         );
     }
 

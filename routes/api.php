@@ -21,5 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::get('/home', [GuideHomeController::class, 'home']);
 Route::get('/categories', [GuideHomeController::class, 'categories']);
+Route::get('/top-categories', [GuideHomeController::class, 'topCategories']);
 Route::get('/customer-jobs', [GuideHomeController::class, 'customerJobs']);
 Route::get('/featured-customers', [GuideHomeController::class, 'featuredCustomers']);
+Route::get('/regions', [GuideHomeController::class, 'regions']);
