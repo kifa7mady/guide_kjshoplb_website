@@ -20,6 +20,7 @@ class Region extends Model
         return url('/guide/region/' . (Str::slug($this->getTranslation('name', 'en')) ?: 'All') . '/' . ($this->id ?: 0 ) . '/'  );
     }
 
+
     public function customerJobs()
     {
         return $this->hasMany(CustomerJob::class)->orderBy('created_at', 'asc');

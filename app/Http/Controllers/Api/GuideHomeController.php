@@ -169,9 +169,7 @@ class GuideHomeController extends Controller
         $regions = Region::with('customerJobs')->get();
         foreach($regions as $key => $region){
             $data[$key]['region_name']= $region->getTranslation('name', 'en');
-            dd($region);
-            $data[$key]['permalink']= $customerJob->permalink;
-            $data[$key]['images']= $customerJob->images;
+            $data[$key]['region_image']= asset('storage/' . ltrim($region->path, '/'));
         }
 
         return response()->json([
