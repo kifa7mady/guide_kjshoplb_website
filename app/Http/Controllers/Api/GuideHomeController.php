@@ -50,6 +50,7 @@ class GuideHomeController extends Controller
         $customerJobs = CustomerJob::query()
             ->select(['id', 'name', 'customer_id']) // only what you need
             ->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id))
+            ->when($region_id, fn ($q) => $q->where('region_id', $region_id))
             ->with([
                 // only needed columns
                 'customer:id,customer_name',
@@ -80,7 +81,8 @@ class GuideHomeController extends Controller
     public function categories(Request $request): JsonResponse
     {
         $filterByCustomerJobs = $request->boolean('customer_jobs_by_category');
-        $region_id = $request->integer('region_id'); // null if not provided
+        $region_id = $request->integer('region_id');
+
         $parents = Category::query()
             ->where('parent_id', 0)
             ->orderBy('name')
