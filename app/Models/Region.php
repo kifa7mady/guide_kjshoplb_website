@@ -26,4 +26,9 @@ class Region extends Model
         return $this->hasMany(CustomerJob::class)->orderBy('created_at', 'asc');
     }
 
+    public function customer()
+    {
+        return $this->hasMany(Customer::class)->orderBy('created_at', 'asc');
+    }
+
 }

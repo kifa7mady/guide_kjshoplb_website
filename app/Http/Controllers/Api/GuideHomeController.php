@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\CustomerJob;
 use App\Models\Region;
 use App\Models\Category;
@@ -168,19 +169,61 @@ class GuideHomeController extends Controller
 
     public function regions(): JsonResponse
     {
+        $with_customers = request()->with_customers;
 
-        $data = [];
+        $regions = Region::query()
+            ->when($with_customers, function ($query) {
+                $query->withCount('customer');
+            })
+            ->get();
 
-        $regions = Region::with('customerJobs')->get();
-        foreach($regions as $key => $region){
-            $data[$key]['region_id']= $region->id;
-            $data[$key]['region_name']= $region->getTranslation('name', 'en');
-            $data[$key]['region_image']= asset('storage/' . ltrim($region->path, '/'));
-        }
+        $data = $regions->map(function ($region) use ($with_customers) {
+            $regionData = [
+                'region_id'    => $region->id,
+                'region_name'  => $region->getTranslation('name', 'en'),
+                'region_image' => asset('storage/' . ltrim($region->path, '/')),
+            ];
+
+            if ($with_customers) {
+                $regionData['customer_count'] = $region->customer_count;
+            }
+
+            return $regionData;
+        });
 
         return response()->json([
             'status' => true,
-            'data' => $data,
+            'data'   => $data,
+        ]);
+    }
+
+
+    public function customers(): JsonResponse
+    {
+        $region_id = request()->region_id;
+
+        $customers = Customer::query()
+            ->when($region_id, fn ($q) => $q->where('region_id', $region_id))
+            ->get();
+
+        $data = $customers->map(function ($customer) {
+            $mobile = $customer->mobile;
+            $customer_name = $customer->customer_name;
+
+            return [
+                'customer_id'     => $customer->id,
+                'customer_name'   => is_array($customer_name)
+                    ? implode(', ', $customer_name)
+                    : (string) $customer_name,
+                'customer_mobile' => is_array($mobile)
+                    ? implode(', ', $mobile)
+                    : (string) $mobile,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'data'   => $data,
         ]);
     }
 }

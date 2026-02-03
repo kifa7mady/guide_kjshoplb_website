@@ -56,6 +56,11 @@ class Customer extends Model
         return $this->hasMany(CustomerImage::class);
     }
 
+    public function regions()
+    {
+        return $this->hasMany(Region::class);
+    }
+
     public function getSeoUrlAttribute(){
         return '/guide/'.  $this->id . '/' . Str::slug($this->customer_names);;
     }
