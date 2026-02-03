@@ -47,37 +47,40 @@ class GuideHomeController extends Controller
         $category_id = request()->category_id;
         $region_id = request()->region_id;
 
+        // Get data
         $customerJobs = CustomerJob::query()
-            ->select(['id', 'name', 'customer_id']) // only what you need
+            ->select(['id', 'name', 'customer_id'])
             ->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id))
             ->when($region_id, fn ($q) => $q->where('region_id', $region_id))
             ->with([
-                // only needed columns
                 'customer:id,customer_name',
-                // load only first image (Laravel 8.41+ / 9+)
-                'images' => fn ($q) => $q->select(['id', 'customer_job_id', 'path'])->limit(1),
+                'firstImage:id,customer_job_id,path', // Load only first image per job
             ])
-            ->get()
-            ->map(function ($job) {
-                $customerName = $job->customer?->customer_name;
+            ->get();
 
-                return [
-                    'customer_job_id'   => $job->id,
-                    'customer_job_name' => $job->name,
-                    'customer_name'     => is_array($customerName)
-                        ? implode(', ', $customerName)
-                        : (string) $customerName,
-                    'customer_job_image' => $job->images->first()
-                        ? asset('storage/' . ltrim($job->images->first()->path, '/'))
-                        : null,
-                ];
-            });
+//dd($customerJobs);
+        // Map data
+        $transformedData = $customerJobs->map(function ($job) {
+            $customerName = $job->customer?->customer_name;
+
+            return [
+                'customer_job_id'   => $job->id,
+                'customer_job_name' => $job->name,
+                'customer_name'     => is_array($customerName)
+                    ? implode(', ', $customerName)
+                    : (string) $customerName,
+                'customer_job_image' => $job->firstImage
+                    ? asset('storage/' . ltrim($job->firstImage->path, '/'))
+                    : null,
+            ];
+        });
 
         return response()->json([
             'status' => true,
-            'data'   => $customerJobs,
+            'data'   => $transformedData,
         ]);
     }
+
     public function categories(Request $request): JsonResponse
     {
         $filterByCustomerJobs = $request->boolean('customer_jobs_by_category');

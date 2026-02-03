@@ -27,6 +27,11 @@ class CustomerJob extends Model
         return $this->hasMany(CustomerJobImage::class)->orderBy('created_at', 'asc');;
     }
 
+    public function firstImage()
+    {
+        return $this->hasOne(CustomerJobImage::class)->oldest('id'); // or ->latest() depending on your needs
+    }
+
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'category_customer_job', 'customer_job_id', 'parent_category_id');
