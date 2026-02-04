@@ -82,6 +82,55 @@ class GuideHomeController extends Controller
         ]);
     }
 
+
+    public function customerJob($customer_job_id){
+
+        // Get data
+        $customerJob = CustomerJob::query()
+            ->select(['id', 'name', 'customer_id','mobile'])
+            ->with([
+                'customer:id,customer_name',
+                'images:id,customer_job_id,path,image_type',
+            ])
+            ->where('id', $customer_job_id)
+            ->first();
+
+        // Handle not found
+        if (!$customerJob) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer job not found',
+            ], 404);
+        }
+
+        // Map data
+        $customerName = $customerJob->customer?->customer_name;
+        $customerJob_images = [];
+
+        foreach($customerJob->images as $image){
+            $customerJob_images[] = [ // Fixed: Changed to append array instead of overwriting
+                'id' => $image->id,
+                'path' => $image->path,
+                'image_type' => $image->image_type,
+            ];
+        }
+
+        $transformedData = [
+            'customer_job_id'   => $customerJob->id,
+            'customer_job_name' => $customerJob->name,
+            'customer_job_mobile' => $customerJob->mobile,
+            'customer_name'     => is_array($customerName)
+                ? implode(', ', $customerName)
+                : (string) $customerName,
+            'customer_job_images' => $customerJob_images,
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data'   => $transformedData,
+        ]);
+    }
+
     public function categories(Request $request): JsonResponse
     {
         $filterByCustomerJobs = $request->boolean('customer_jobs_by_category');
