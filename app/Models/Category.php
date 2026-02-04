@@ -53,6 +53,9 @@ class Category extends Model
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
+
+
+
     public function getSeoUrlAttribute(){
         if(!empty(request()->cookie('region_id'))){
             $region = Region::find(request()->cookie('region_id'));

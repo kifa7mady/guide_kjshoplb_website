@@ -149,8 +149,21 @@ class GuideHomeController extends Controller
             ->get(['id', 'parent_id', 'name', 'icon'])
             ->groupBy('parent_id');
 
-        $data = $parents->map(function ($parent) use ($children) {
+        // Load region data only if region_id is provided
+        $region = null;
+        if ($region_id) {
+            $region = Region::find($region_id);
 
+            // Handle region not found
+            if (!$region) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Region not found',
+                ], 404);
+            }
+        }
+
+        $categories = $parents->map(function ($parent) use ($children) {
             return [
                 'category_id'   => $parent->id,
                 'category_name' => $parent->getTranslation('name', 'en'),
@@ -165,6 +178,20 @@ class GuideHomeController extends Controller
                     ->values(),
             ];
         })->values();
+
+        // Build response data
+        $data = [
+            'categories' => $categories,
+        ];
+
+        // Add region data if region exists
+        if ($region) {
+            $data['region'] = [
+                'region_id'    => $region->id,
+                'region_name'  => $region->getTranslation('name', 'en'),
+                'region_image' => asset('storage/' . ltrim($region->path, '/')),
+            ];
+        }
 
         return response()->json([
             'status' => true,
