@@ -51,7 +51,7 @@ class GuideHomeController extends Controller
         // Get data
         $customerJobs = CustomerJob::query()
             ->select(['id', 'name', 'customer_id'])
-            ->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id))
+            ->when($category_id, fn ($q) => $q->whereHas('subCategories', fn ($q) => $q->where('category_id', $category_id)))
             ->when($region_id, fn ($q) => $q->where('region_id', $region_id))
             ->with([
                 'customer:id,customer_name',
@@ -59,7 +59,6 @@ class GuideHomeController extends Controller
             ])
             ->get();
 
-//dd($customerJobs);
         // Map data
         $transformedData = $customerJobs->map(function ($job) {
             $customerName = $job->customer?->customer_name;
