@@ -135,16 +135,19 @@ class GuideHomeController extends Controller
     {
         $filterByCustomerJobs = $request->boolean('customer_jobs_by_category');
         $region_id = $request->integer('region_id');
+        $category_id = $request->integer('category_id');
 
         $parents = Category::query()
             ->where('parent_id', 0)
             ->orderBy('name')
+            ->where('id',$category_id)
             ->get(['id', 'name', 'icon']);
 
         $children = Category::query()
             ->where('parent_id', '>', 0)
             ->when($filterByCustomerJobs, fn ($q) => $q->has('customerJobsByCategory')->withCount('customerJobsByCategory'))
             ->when($region_id, fn ($q) => $q->whereHas('customerJobsByCategory', fn ($q) => $q->where('region_id', $region_id)))
+            ->where('parent_id',$category_id)
             ->orderBy('name')
             ->get(['id', 'parent_id', 'name', 'icon'])
             ->groupBy('parent_id');
