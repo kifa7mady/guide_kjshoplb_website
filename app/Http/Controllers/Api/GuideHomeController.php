@@ -227,11 +227,18 @@ class GuideHomeController extends Controller
     }
 
 
-    public function featuredCustomers(): JsonResponse
+    public function featuredStores(): JsonResponse
     {
 
         $data = [];
-        $customerJobs = CustomerJob::with('images')->limit(5)->get();
+        $ids = [50, 31, 12, 46, 17];
+        $customerJobs = CustomerJob::
+            with([
+                'firstImage:id,customer_job_id,path', // Load only first image per job
+            ])
+            ->whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
         foreach($customerJobs as $key => $customerJob){
             $data[$key]['customer_name']= $customerJob->name;
             $data[$key]['permalink']= $customerJob->permalink;

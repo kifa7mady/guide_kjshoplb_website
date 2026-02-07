@@ -24,6 +24,6 @@ Route::get('/categories', [GuideHomeController::class, 'categories']);
 Route::get('/top-categories', [GuideHomeController::class, 'topCategories']);
 Route::get('/customer-jobs', [GuideHomeController::class, 'customerJobs']);
 Route::get('/customer-job/{id}', [GuideHomeController::class, 'customerJob']);
-Route::get('/featured-customers', [GuideHomeController::class, 'featuredCustomers']);
+Route::get('/featured-stores', [GuideHomeController::class, 'featuredStores']);
 Route::get('/regions', [GuideHomeController::class, 'regions']);
 Route::get('/customers', [GuideHomeController::class, 'customers']);
